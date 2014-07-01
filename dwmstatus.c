@@ -4,8 +4,6 @@
  * pass the argument -Dverbosity=2 when compiling for output
  * or -D experimental_alarm to see what happens (nothing useful)
  * last updated aug 16 2013
- * tried to add daemon() on may 31 2014
- * but now it doesn't even compile? all the Xlib stuff is borked
  * also, replace getavgs() with a read from /proc/loadavg
  */
 
@@ -28,14 +26,14 @@
 // files -- populated by cron
 #define MAILFILE "/tmp/dwm-status.mail"
 #define PKGFILE "/tmp/dwm-status.packages"
-#define FBCMDFILE "/tmp/dwm-status.fbcmd"
+// #define FBCMDFILE "/tmp/dwm-status.fbcmd"
 
 // ideally this would only be defined if i knew zenity was installed
 // but fuck that, right???? who even needs makefiles
 #define zenity
 
 // NDEBUG turns off all assert() calls
-// #define NDEBUG
+#define NDEBUG
 
 #ifndef verbosity
 #define verbosity 0
@@ -135,21 +133,21 @@ static int getbattery(void) {
             return -1;
         }
         char * status;
-        status = malloc(25);
-        fscanf(fd, "%s", status);
+        status = malloc(15);
+//         fscanf(fd, "%s", status);
+        fgets(status, 15, fd);
         fclose(fd);
         if ( ! strncmp(status, "Discharging", 11) ) {
             fprintf(stderr, "low battery warning\n");
             if (fork()) { 
-                // rewrite this with execve
-                // now improve it
-//                 char * gayargs[] = {"zenity", "--warning", 
-//                                     "--text=\"charge my fuckin' battery!\""};
-//                 char * gayenv[] = {NULL};
-//                 execve("/usr/bin/zenity", gayargs, gayenv);
+                char * const gayargs[] = {"zenity", "--warning", "--text=you're a fat slut", NULL};
+//                 execv("zenity", {"--warning", "--text=what", NULL});
+                execv("/usr/bin/zenity", gayargs);
+                    /*
                 system("zenity --warning \
                         --text=\"charge my fuckin' battery!\"");
                 exit(0);
+                    */
             }
         }
 #endif
