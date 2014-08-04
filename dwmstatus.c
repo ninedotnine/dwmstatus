@@ -8,13 +8,13 @@
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * add cmdline args to either print immediately or daemon
  *     make verboseMode do something or get rid of it
+ * colours!!!
  */
 
 // this makes gcc not complain about implicit declarations of popen and pclose
 // when using -pedantic and -std=c99. i guess that's good?
-// also provides getloadavg
+// also provides getloadavg and asprintf
 // see: man 7 feature_test_macros
-// #define _BSD_SOURCE
 #define _GNU_SOURCE
 
 /* SETTINGS */
@@ -25,7 +25,8 @@
 // the format for everything
 // const char outformat[] = "[batt: %d%%] [mail %d] [pkg %d] [net %s] %s";
 // #define OUTFORMAT "[%.2f %.2f %.2f] [batt: %d%%] [mail %d] [pkg %d] [net %s] %s"
-#define OUTFORMAT "[%.2f %.2f %.2f] [%s] [batt: %d%%] [mail %d] [net %s] %s"
+#define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [mail %d] [net %s] %s"
+// #define OUTFORMAT "[%.2f %.2f %.2f] [%s] [batt: %d%%] [mail %d] [net %s] %s"
 // level to warn on low battery
 #define WARN_LOW_BATT 9
 #define WARN_LOW_BATT_TEXT "you're a fat slut"
@@ -59,13 +60,13 @@
 
 const char * program_name;
 
-static void setstatus(const char *str, Display *dpy) {
+void setstatus(const char *str, Display *dpy) {
     assert(dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), str);
     XSync(dpy, False);
 }
 
-static char *getdatetime(void) {
+char *getdatetime(void) {
 #if verbosity > 1
     printf("entering getdatetime()\n");
 #endif
@@ -95,7 +96,7 @@ static char *getdatetime(void) {
     return buf;
 }
 
-static int getfiledata(const char *filename) {
+int getfiledata(const char *filename) {
 #if verbosity > 1
     printf("entering getfiledata(), arg is: %s\n", filename);
 #endif
@@ -116,7 +117,7 @@ static int getfiledata(const char *filename) {
     return result;
 }
 
-static int getbattery(void) {
+char * getbattery(void) {
 #if verbosity > 1
     printf("entering getbattery()\n");
 #endif
@@ -141,7 +142,8 @@ static int getbattery(void) {
         fd = fopen("/sys/class/power_supply/BAT0/status", "r");
         if (fd == NULL) {
             fprintf(stderr, "Error opening status.\n");
-            return -1;
+//             return -1;
+            exit(EXIT_FAILURE);
         }
         char * status;
         status = malloc(15);
@@ -166,10 +168,28 @@ static int getbattery(void) {
 #if verbosity > 1
     printf("returning %d from getbattery()\n", capacity);
 #endif
-    return capacity;
+
+    // colourize the result
+    char * result;
+    int code;
+    if (capacity > WARN_LOW_BATT + 20) {
+        code = 3; // deep green
+    } else if (capacity > WARN_LOW_BATT) {
+        code = 2; // yellow
+    } else {
+        code = 1; // red
+    }
+//         int test = asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0));
+        int test = asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0));
+        if (test == -1) {
+            fprintf(stderr, "whoooaaa, test in getbattery was -1");
+            exit(EXIT_FAILURE);
+        }
+    return result;
+
 }
 
-static char *net(void) {
+char *net(void) {
 #if verbosity > 1
     printf("now entering net()\n");
 #endif
@@ -251,12 +271,35 @@ void usage(FILE * stream, int exit_code) {
 
 
  // obviously do this right
-char * getColour(void) {
+// char * getColour(void) {
+char * getColour(int code) {
+    char * colour;
+    if (code == 0) {
+        colour = "\x1b[0m"; // reset 
+    } else if (code == 1) { 
+        colour = "\x1b[38;5;196m"; // reset
+    } else if (code == 2) {
+        colour = "\x1b[38;5;190m"; // yellow
+    } else if (code == 3) {
+        colour = "\x1b[38;5;34m"; // deep green
+    } else if (code == 4) {
+        colour = "\x1b[38;5;199m"; // purple
+    } else {
+        colour = "\x1b[38;5;46m"; // bright green
+    }
+
+    /*
     char * colour = malloc(100);
     snprintf(colour, 100, "\x1b[38;5;196m"); // red
+    */
     return colour;
 }
 
+char * resetColour(void) {
+    char * reset = "\x1b[0m";
+//     strcat(result, "\x1b[0m");
+    return reset;
+}
            
 
 
@@ -368,7 +411,6 @@ int daemonize(Display * dpy) {
     daemon(0, 0);
   
 // 	static unsigned long long int recv, sent;
-//     double * avgs;
 // 	parse_netdev(&recv, &sent);
     for (; ; sleep(1)) {
     /*
