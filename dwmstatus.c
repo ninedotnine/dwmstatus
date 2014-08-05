@@ -1,11 +1,9 @@
 /* 
  * 9.9
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
- * pass the argument -Dverbosity=2 when compiling for output
  * or -D experimental_alarm to see what happens (nothing useful)
- * last updated aug 05 2014
+ * last updated aug 04 2014
  * also, replace getavgs() with a read from /proc/loadavg
- *    or colourize it instead...
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * add cmdline args to either print immediately or daemon
  *     make verboseMode do something or get rid of it
@@ -43,10 +41,6 @@
 // NDEBUG turns off all assert() calls
 // #define NDEBUG
 
-#ifndef verbosity
-#define verbosity 0
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -68,9 +62,6 @@ void setstatus(const char *str, Display *dpy) {
 }
 
 char *getdatetime(void) {
-#if verbosity > 1
-    printf("entering getdatetime()\n");
-#endif
     char *buf;
     time_t result;
     struct tm *resulttm;
@@ -91,16 +82,10 @@ char *getdatetime(void) {
         fprintf(stderr, "strftime is 0.\n");
         return "time ???";
     }
-#if verbosity > 1
-    printf("returning %s from getdatetime()\n", buf);
-#endif
     return buf;
 }
 
 int getfiledata(const char *filename) {
-#if verbosity > 1
-    printf("entering getfiledata(), arg is: %s\n", filename);
-#endif
     FILE *fd;
     int result;
     fd = fopen(filename, "r");
@@ -112,16 +97,10 @@ int getfiledata(const char *filename) {
     }
     fscanf(fd, "%d", &result);
     fclose(fd);
-#if verbosity > 1
-    printf("returning %d from getfiledata()\n", result);
-#endif
     return result;
 }
 
 char * getbattery(void) {
-#if verbosity > 1
-    printf("entering getbattery()\n");
-#endif
     int capacity;
     bool chargin = false;
     capacity = getfiledata("/sys/class/power_supply/BAT0/capacity");
@@ -137,9 +116,7 @@ char * getbattery(void) {
     }
 #endif
 
-//     if (capacity <= WARN_LOW_BATT) {
-//     if (capacity < 95) {
-    if (capacity < 100) {
+    if (capacity < 95) {
         FILE *fd;
         fd = fopen("/sys/class/power_supply/BAT0/status", "r");
         if (fd == NULL) {
@@ -175,9 +152,6 @@ char * getbattery(void) {
 #endif
         }
     }
-#if verbosity > 1
-    printf("returning %d from getbattery()\n", capacity);
-#endif
 
     // colourize the result
     char * result;
@@ -205,9 +179,6 @@ char * getbattery(void) {
 }
 
 char *net(void) {
-#if verbosity > 1
-    printf("now entering net()\n");
-#endif
     FILE *fp;
     /* fp = popen("ping -c 1 -W 1 google.com > /dev/null 2>&1 && \
                echo 'NET: ON' || echo 'NET OFF'", "r"); */
@@ -236,9 +207,6 @@ char *net(void) {
         result[strlen(result)-1] = '\0';
     }
     strcat(result, "\x1b[0m");
-#if verbosity > 1
-    printf("returning %s from net()\n", output);
-#endif
 //     return output;
     return result;
 }
@@ -368,7 +336,10 @@ int main(int argc, char * argv[]) {
     // updateStatus once first to initialize the static variables sent and recv
     updateStatus(dpy);
     if (daemonMode) {
-        return daemonize(dpy);
+        daemon(0,0);
+        for (; ; sleep(1)) {
+            updateStatus(dpy);
+        }
     } 
 
     updateStatus(dpy);
@@ -379,7 +350,6 @@ int main(int argc, char * argv[]) {
 }
 
 void updateStatus(Display *dpy) {
-//     printf("%s\n", getColour() + 1);
 	static unsigned long long int recv, sent;
     static char * status;
     double * avgs = getavgs();
@@ -390,22 +360,18 @@ void updateStatus(Display *dpy) {
 
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
-
     if (asprintf(&status, OUTFORMAT,
-             avgs[0], avgs[1], avgs[2],
-             get_netusage(&recv, &sent),
-             getbattery(),
-             getfiledata(MAILFILE), 
-//                  getfiledata(PKGFILE), 
-             net(), getdatetime()) == -1) {
+                 avgs[0], avgs[1], avgs[2],
+                 get_netusage(&recv, &sent),
+                 getbattery(),
+                 getfiledata(MAILFILE), 
+                 net(), getdatetime()) == -1) {
         fprintf(stderr, "error, unable to malloc() in asprintf()");
         exit(1);
     }
 
     setstatus(status, dpy);
     free(status);
-    // obviously do this right
-//     setstatus(strcat(getColour(), status), dpy);
 
     /*
     if (verboseMode) {
@@ -414,23 +380,6 @@ void updateStatus(Display *dpy) {
     */
 }
 
-
-int daemonize(Display * dpy) {
-//     printf("running daemon HEHE\n");
-//     daemon(0, 0);
-  
-// 	static unsigned long long int recv, sent;
-// 	parse_netdev(&recv, &sent);
-    for (; ; sleep(1)) {
-    /*
-    for (int x = 0; ; sleep(4)) {
-        printf("iteration %i!\n", x);
-        x++;
-        */
-        updateStatus(dpy);
-    }
-    return 0;
-}
 
 /* --------------------------------------------------  
    net stuff begins here, with thanks to anonymous suckless contributor
