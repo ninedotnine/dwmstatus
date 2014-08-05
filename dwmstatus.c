@@ -122,6 +122,7 @@ char * getbattery(void) {
     printf("entering getbattery()\n");
 #endif
     int capacity;
+    bool chargin = false;
     capacity = getfiledata("/sys/class/power_supply/BAT0/capacity");
 
 #ifdef experimental_alarm
@@ -135,24 +136,32 @@ char * getbattery(void) {
     }
 #endif
 
-#ifdef zenity
-    // display a warning on low battery and not plugged in. depends on zenity
-    if (capacity <= WARN_LOW_BATT) {
+//     if (capacity <= WARN_LOW_BATT) {
+//     if (capacity < 95) {
+    if (capacity < 100) {
         FILE *fd;
         fd = fopen("/sys/class/power_supply/BAT0/status", "r");
         if (fd == NULL) {
-            fprintf(stderr, "Error opening status.\n");
-//             return -1;
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "Error opening BAT0/status.\n");
+            return "??%";
         }
+
         char * status;
         status = malloc(15);
 //         fscanf(fd, "%s", status);
         fgets(status, 15, fd);
         fclose(fd);
-        if ( ! strncmp(status, "Discharging", 11) ) {
+
+        chargin = 0 != strncmp(status, "Discharging", 11);
+        printf("chargin: %s\n", (chargin) ? "true" : "false");
+//         if ( ! strncmp(status, "Discharging", 11) ) {
+//         if ( ! chargin) {
+        if (! chargin && capacity <= WARN_LOW_BATT) {
             fprintf(stderr, "low battery warning\n");
-            if (fork()) { 
+#ifdef zenity
+            // display a warning on low battery and not plugged in. 
+            // depends on zenity
+            if (! fork()) { 
                 char * const args[] = {"zenity", "--warning", "--text=you're a fat slut", NULL};
 //                 execv("zenity", {"--warning", "--text=what", NULL});
                 execv("/usr/bin/zenity", args);
@@ -162,8 +171,8 @@ char * getbattery(void) {
                 exit(0);
                     */
             }
-        }
 #endif
+        }
     }
 #if verbosity > 1
     printf("returning %d from getbattery()\n", capacity);
@@ -172,19 +181,24 @@ char * getbattery(void) {
     // colourize the result
     char * result;
     int code;
-    if (capacity > WARN_LOW_BATT + 20) {
+//     if (capacity > WARN_LOW_BATT + 20) {
+    if (capacity > 95) {
         code = 3; // deep green
-    } else if (capacity > WARN_LOW_BATT) {
+    } else if (chargin) {
+        code = 4; // magenta
+    } else if (capacity > WARN_LOW_BATT && capacity < WARN_LOW_BATT + 20) {
         code = 2; // yellow
-    } else {
+    } else if (capacity < WARN_LOW_BATT) {
         code = 1; // red
+    } else {
+        code = 0;
     }
-//         int test = asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0));
-        int test = asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0));
-        if (test == -1) {
-            fprintf(stderr, "whoooaaa, test in getbattery was -1");
-            exit(EXIT_FAILURE);
-        }
+
+    int test = asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0));
+    if (test == -1) {
+        fprintf(stderr, "whoooaaa, test in getbattery was -1");
+        exit(EXIT_FAILURE);
+    }
     return result;
 
 }
@@ -207,7 +221,7 @@ char *net(void) {
     pclose(fp);
 
     char * result = malloc(40);
-    snprintf(result, 15, "\x1b[38;5;196m");
+    snprintf(result, 15, "%s", getColour(3));
     
     strcat(result, output);
 
@@ -283,7 +297,7 @@ char * getColour(int code) {
     } else if (code == 3) {
         colour = "\x1b[38;5;34m"; // deep green
     } else if (code == 4) {
-        colour = "\x1b[38;5;199m"; // purple
+        colour = "\x1b[38;5;199m"; // magenta
     } else {
         colour = "\x1b[38;5;46m"; // bright green
     }
@@ -294,14 +308,6 @@ char * getColour(int code) {
     */
     return colour;
 }
-
-char * resetColour(void) {
-    char * reset = "\x1b[0m";
-//     strcat(result, "\x1b[0m");
-    return reset;
-}
-           
-
 
 int main(int argc, char * argv[]) {
 
@@ -408,13 +414,13 @@ void updateStatus(Display *dpy) {
 
 int daemonize(Display * dpy) {
 //     printf("running daemon HEHE\n");
-    daemon(0, 0);
+//     daemon(0, 0);
   
 // 	static unsigned long long int recv, sent;
 // 	parse_netdev(&recv, &sent);
     for (; ; sleep(1)) {
     /*
-    for (int x = 0; ; sleep(1)) {
+    for (int x = 0; ; sleep(4)) {
         printf("iteration %i!\n", x);
         x++;
         */
