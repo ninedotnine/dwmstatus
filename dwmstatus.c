@@ -3,8 +3,9 @@
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
  * pass the argument -Dverbosity=2 when compiling for output
  * or -D experimental_alarm to see what happens (nothing useful)
- * last updated aug 04 2014
+ * last updated aug 05 2014
  * also, replace getavgs() with a read from /proc/loadavg
+ *    or colourize it instead...
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * add cmdline args to either print immediately or daemon
  *     make verboseMode do something or get rid of it
@@ -364,6 +365,8 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
+    // updateStatus once first to initialize the static variables sent and recv
+    updateStatus(dpy);
     if (daemonMode) {
         return daemonize(dpy);
     } 
@@ -435,14 +438,13 @@ int daemonize(Display * dpy) {
 
 bool parse_netdev(unsigned long long int *receivedabs, 
                   unsigned long long int *sentabs) {
-	char buf[255];
+	static const int bufsize = 255;
+	char buf[bufsize];
 	char *datastart;
-	static int bufsize;
-	bool success;
+	bool success; // will be returned
 	FILE *devfd;
 	unsigned long long int receivedacc, sentacc;
 
-	bufsize = 255;
 	devfd = fopen("/proc/net/dev", "r");
 	success = false;
 
@@ -467,21 +469,20 @@ bool parse_netdev(unsigned long long int *receivedabs,
 	return success;
 }
 
-void calculate_speed(char *speedstr, unsigned long long int newval, 
-                     unsigned long long int oldval) {
+char * calculate_speed(unsigned long long int newval, 
+                       unsigned long long int oldval) {
+    char * speedstr; // will be returned
 	double speed;
     char unit;
+
 	speed = (newval - oldval) / 1024.0;
 	if (speed > 1024.0) {
 	    speed /= 1024.0;
-        unit = 'm';
-// 	    sprintf(speedstr, "%.3f MB/s", speed);
-// 	    sprintf(speedstr, "%.2fm", speed);
+        unit = 'M';
 	} else {
         unit = 'k';
-// 	    sprintf(speedstr, "%.2f KB/s", speed);
-// 	    sprintf(speedstr, "%.2fk", speed);
 	}
+
     // pad the beginning of the string so it uses the same space for all sizes
     char * padding;
     if (speed < 10) {
@@ -491,8 +492,9 @@ void calculate_speed(char *speedstr, unsigned long long int newval,
     } else {
         padding = "";
     }
-    sprintf(speedstr, "%s%.2f%c", padding, speed, unit);
 
+    asprintf(&speedstr, "%s%.2f%c", padding, speed, unit);
+    return speedstr;
 }
 
 char * get_netusage(unsigned long long int *recv, 
@@ -504,18 +506,16 @@ char * get_netusage(unsigned long long int *recv,
 	bool retval = parse_netdev(&newrecv, &newsent);
 	if (! retval) {
 	    fprintf(stdout, "Error when parsing /proc/net/dev file.\n");
-	    exit(1);
+	    return "V: ?? Λ: ??";
 	}
 
-	char downspeedstr[15], upspeedstr[15];
-	calculate_speed(downspeedstr, newrecv, *recv);
-	calculate_speed(upspeedstr, newsent, *sent);
+	char * downspeedstr = calculate_speed(newrecv, *recv);
+	char * upspeedstr = calculate_speed(newsent, *sent);
 
-	static char retstr[42];
-// 	sprintf(retstr, "down: %s up: %s", downspeedstr, upspeedstr);
-	sprintf(retstr, "V:%s Λ:%s", downspeedstr, upspeedstr);
+	char * netusage; // will be returned
+	asprintf(&netusage, "V:%s Λ:%s", downspeedstr, upspeedstr);
 
 	*recv = newrecv;
 	*sent = newsent;
-	return retstr;
+	return netusage;
 }
