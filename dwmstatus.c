@@ -2,7 +2,7 @@
  * 9.9
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
  * or -D experimental_alarm to see what happens (nothing useful)
- * last updated aug 05 2014
+ * last updated aug 20 2014
  * also, replace getAvgs() with a read from /proc/loadavg
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * add cmdline args to either print immediately or daemon
@@ -133,7 +133,7 @@ char * getBattery(void) {
         }
 
         char * status;
-        status = malloc(15 * sizeof(char));
+        status = malloc(4 * sizeof(char));
 //         fscanf(fd, "%s", status);
         fgets(status, 15, fd);
         fclose(fd);
@@ -441,16 +441,7 @@ char * calculate_speed(unsigned long long int newval,
 	}
 
     // pad the beginning of the string so it uses the same space for all sizes
-    char * padding;
-    if (speed < 10) {
-        padding = "  ";
-    } else if (speed < 100) {
-        padding = " ";
-    } else {
-        padding = "";
-    }
-
-    if (asprintf(&speedstr, "%s%.2f%c", padding, speed, unit) == -1) {
+    if (asprintf(&speedstr, "%6.2f%c", speed, unit) == -1) {
         return "??";
     }
     return speedstr;
