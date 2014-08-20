@@ -133,7 +133,7 @@ char * getBattery(void) {
         }
 
         char * status;
-        status = malloc(4 * sizeof(char));
+        status = malloc(15 * sizeof(char));
 //         fscanf(fd, "%s", status);
         fgets(status, 15, fd);
         fclose(fd);
