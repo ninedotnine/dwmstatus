@@ -2,7 +2,7 @@
  * 9.9
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
  * or -D experimental_alarm to see what happens (nothing useful)
- * last updated aug 20 2014
+ * last updated aug 24 2014
  * also, replace getAvgs() with a read from /proc/loadavg
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * add cmdline args to either print immediately or daemon
@@ -15,24 +15,6 @@
 // also provides getloadavg and asprintf
 // see: man 7 feature_test_macros
 #define _GNU_SOURCE
-
-/* SETTINGS */
-
-// the format for the date/time
-// const char timestring[] = "[%a %b %d] %H:%M";
-#define TIMESTRING "[%a %b %d] %H:%M"
-// the format for everything
-// const char outformat[] = "[batt: %d%%] [mail %d] [pkg %d] [net %s] %s";
-// #define OUTFORMAT "[%.2f %.2f %.2f] [batt: %d%%] [mail %d] [pkg %d] [net %s] %s"
-#define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [%s] [mail %d] [net %s] %s"
-// #define OUTFORMAT "[%.2f %.2f %.2f] [%s] [batt: %d%%] [mail %d] [net %s] %s"
-// level to warn on low battery
-#define WARN_LOW_BATT 9
-#define WARN_LOW_BATT_TEXT "you're a fat slut"
-// files -- populated by cron
-#define MAILFILE "/tmp/dwm-status.mail"
-#define PKGFILE "/tmp/dwm-status.packages"
-// #define FBCMDFILE "/tmp/dwm-status.fbcmd"
 
 // ideally this would only be defined if i knew zenity was installed
 // but fuck that, right???? who even needs makefiles
@@ -51,12 +33,18 @@
 #include <getopt.h>
 #include <stdbool.h>
 #include "dwm-status.h"
-// #include <netdb.h>
+#include <netdb.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+
+#include "dwm-status-defs.h"
 
 const char * program_name;
+bool verboseMode;
+
 
 void setstatus(const char *str, Display *dpy) {
-    assert(dpy != NULL);
+    assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), str);
     XSync(dpy, False);
 }
@@ -100,10 +88,19 @@ int getfiledata(const char *filename) {
 }
 
 char * getTemperature(void) {
-    int temper;
-    temper = getfiledata("/sys/class/hwmon/hwmon0/device/temp1_input");
-    char * result;
-    asprintf(&result, "%02.1f°C", ((float) temper/1000));
+    float temper = (float) getfiledata(TEMPERATURE) / 1000.0;
+    char * result; // will be returned
+    int code; // for colouring
+    if (temper > 75) {
+        code = 2; // yellow
+    } else if (temper > 85) {
+        code = 1; // red
+    } else if (temper < 60) {
+        code = 6; // blue 
+    } else {
+        code = -1; // empty string 
+    }
+    asprintf(&result, "%s%02.1f°C%s", getColour(code), temper, getColour(0));
     return result;
 }
 
@@ -111,7 +108,8 @@ char * getTemperature(void) {
 char * getBattery(void) {
     int capacity;
     bool chargin = false;
-    capacity = getfiledata("/sys/class/power_supply/BAT0/capacity");
+//     capacity = getfiledata("/sys/class/power_supply/BAT0/capacity");
+    capacity = getfiledata(BATT_CAPACITY);
 
 #ifdef experimental_alarm
     // alarm never seems to be anything but 0 ?_?
@@ -126,9 +124,9 @@ char * getBattery(void) {
 
     if (capacity < 95) {
         FILE *fd;
-        fd = fopen("/sys/class/power_supply/BAT0/status", "r");
+        fd = fopen(BATT_STATUS, "r");
         if (fd == NULL) {
-            fprintf(stderr, "Error opening BAT0/status.\n");
+            fprintf(stderr, "Error opening BATT_STATUS.\n");
             return "??%";
         }
 
@@ -148,14 +146,9 @@ char * getBattery(void) {
             // display a warning on low battery and not plugged in. 
             // depends on zenity
             if (! fork()) { 
-                char * const args[] = {"zenity", "--warning", "--text=you're a fat slut", NULL};
-//                 execv("zenity", {"--warning", "--text=what", NULL});
+                char * const args[] = {"zenity", "--warning", 
+                                       "--text=you're a fat slut", NULL}; 
                 execv("/usr/bin/zenity", args);
-                    /*
-                system("zenity --warning \
-                        --text=\"charge my fuckin' battery!\"");
-                exit(0);
-                    */
             }
 #endif
         }
@@ -164,18 +157,18 @@ char * getBattery(void) {
     // colourize the result
     char * result; // will be returned
     int code;
-//     if (capacity > WARN_LOW_BATT + 20) {
-    if (capacity > 95) {
-        code = 3; // deep green
-    } else if (chargin) {
+    if (chargin) {
         code = 4; // magenta
-    } else if (capacity > WARN_LOW_BATT && capacity < WARN_LOW_BATT + 20) {
+    } else if (capacity > 70) {
+        code = 3; // deep green
+    } else if (capacity > 30) {
+        code = 6; // blue
+    } else if (capacity > WARN_LOW_BATT) {
         code = 2; // yellow
-    } else if (capacity < WARN_LOW_BATT) {
-        code = 1; // red
     } else {
-        code = 0;
+        code = 1; // red
     }
+
 
     if (asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0)) 
             == -1) {
@@ -185,36 +178,42 @@ char * getBattery(void) {
     return result;
 }
 
-char *net(void) {
-    FILE *fp;
-    /* fp = popen("ping -c 1 -W 1 google.com > /dev/null 2>&1 && \
-               echo 'NET: ON' || echo 'NET OFF'", "r"); */
-    fp = popen("ping -c 1 -W 1 google.com > /dev/null 2>&1 && \
-               echo 'ON' || echo 'OFF'", "r");
-    if (fp == NULL) {
-        return "err";
-    } 
-    char *output;
-    output = malloc(4 * sizeof(char));
-    fgets(output, 4, fp);
-    pclose(fp);
+void setup_addrinfo(struct addrinfo ** info) {
+    printf("setup_addrinfo\n");
+    int error = getaddrinfo("google.com", "80", NULL, info);
+    if (error != 0) {
+        fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
+    }   
+    printf("end setup_addrinfo\n");
+    assert (info != NULL && *info != NULL);
+}
 
-    char * result = malloc(40 * sizeof(char));
-    snprintf(result, 15, "%s", getColour(3));
-    
-    strcat(result, output);
+char * net(void) {
+//     printf("start newnet()\n");
 
-    // the last character might be an unwanted newline
-    /*
-    if (output[strlen(output)-1] == '\n') {
-        output[strlen(output)-1] = '\0';
+    struct addrinfo * info = NULL;
+//     setup_addrinfo(&info);
+    int error = getaddrinfo("google.com", "80", NULL, &info);
+    if (error != 0) {
+        fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
+        return "error";
+    }   
+    assert (info != NULL);
+
+//     printf("making socket\n");
+    int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
+//     printf("connecting \n");
+    char * result; // will be returned
+    int success; // check the return value of asprintf
+    if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
+        success = asprintf(&result, "%sNET%s", getColour(1), getColour(0));
+    } else {
+        success = asprintf(&result, "%sOK%s", getColour(3), getColour(0));
     }
-    */
-    if (result[strlen(result)-1] == '\n') {
-        result[strlen(result)-1] = '\0';
+    if (success == -1) {
+        fprintf(stderr, "error, unable to malloc() in asprintf()");
+        return "error";
     }
-    strcat(result, "\x1b[0m");
-//     return output;
     return result;
 }
 
@@ -224,6 +223,9 @@ double * getAvgs(void) {
     // must return exactly 3 doubles 
     double * avgs = malloc(3 * sizeof(double));
     int num_avgs = getloadavg(avgs, 3);
+    assert (num_avgs == 3);
+//     assert (getloadavg(avgs, 3) == 3);
+    /*
     if (num_avgs < 3) {
         if (num_avgs == -1) {
             fprintf(stderr, "num_avgs is -1");
@@ -233,6 +235,7 @@ double * getAvgs(void) {
             avgs[i] = 9.9;
         }
     }
+    */
     return avgs;
 }
 
@@ -252,37 +255,35 @@ void usage(FILE * stream, int exit_code) {
     // prints what's up to stream, then quits with status exit_code
     fprintf(stream, "usage: %s [args]\n", program_name);
     fprintf(stream, " -h --help         display this message\n");
-    fprintf(stream, " -v --verbose      verbose mode, does nothing LOL\n");
+    fprintf(stream, " -v --verbose      verbose mode\n");
     fprintf(stream, " -d --daemon       run in background\n");
     fprintf(stream, " -r --report       report status immediately (default)\n");
     exit(exit_code);
 }
 
 char * getColour(int code) {
-    char * colour; // will be returned
     // one way to display all available colours: weechat --colors
-
+    // positive codes return various colours
+    // code 0 returns a reset string
+    // code -1 returns empty string
     switch (code) {
         case 0: 
-            colour = "\x1b[0m"; // reset 
-            break;
+            return "\x1b[0m"; // reset 
         case 1:
-            colour = "\x1b[38;5;196m"; // red
-            break;
+            return "\x1b[38;5;196m"; // red
         case 2:
-            colour = "\x1b[38;5;190m"; // yellow
-            break;
+            return "\x1b[38;5;190m"; // yellow
         case 3:
-            colour = "\x1b[38;5;34m"; // deep green
-            break;
+            return "\x1b[38;5;34m"; // deep green
         case 4:
-            colour = "\x1b[38;5;199m"; // magenta
-            break;
+            return "\x1b[38;5;199m"; // magenta
+        case 5:
+            return "\x1b[38;5;46m"; // bright green
+        case 6:
+            return "\x1b[38;5;21m"; // blue
         default:
-            colour = "\x1b[38;5;46m"; // bright green
+            return "";
     }
-
-    return colour;
 }
 
 int main(int argc, char * argv[]) {
@@ -303,7 +304,8 @@ int main(int argc, char * argv[]) {
     /* parse args */
     int nextOption;
     bool daemonMode = false;
-    bool verboseMode = false;
+//     bool verboseMode = false;
+    verboseMode = false;
 
     do {
         nextOption = getopt_long(argc, argv, shortOptions, longOptions, NULL);
@@ -311,7 +313,7 @@ int main(int argc, char * argv[]) {
             case 'h':
                 usage(stdout, 0);
             case 'v':
-                printf("goin into verbose mode LOL NOT REALLY\n");
+//                 printf("goin into verbose mode\n");
                 verboseMode = true;
                 break;
             case 'd':
@@ -344,15 +346,17 @@ int main(int argc, char * argv[]) {
 
     if (daemonMode) {
         daemon(0,0);
-        for (; ; sleep(15)) {
+        for (; ; sleep(SLEEP_INTERVAL)) {
             updateStatus(dpy);
         }
     } 
 
     updateStatus(dpy);
+    /*
     if (verboseMode) { // this is currently the only place verboseMode is used
         printf("now quittin!\n"); // LOL
     }
+    */
     return 0;
 }
 
@@ -378,14 +382,12 @@ void updateStatus(Display *dpy) {
         exit(1);
     }
 
-    setstatus(status, dpy);
-    free(status);
-
-    /*
     if (verboseMode) {
         printf("%s\n", status);
     }
-    */
+
+    setstatus(status, dpy);
+    free(status);
 }
 
 
