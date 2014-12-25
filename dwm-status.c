@@ -1,13 +1,12 @@
 /* 
  * 9.9
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
- * or -D experimental_alarm to see what happens (nothing useful)
- * last updated aug 24 2014
+ * last updated dec 25 2014
  * also, replace getAvgs() with a read from /proc/loadavg
+ *    uhh, if you feel like it...
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
- * add cmdline args to either print immediately or daemon
- *     make verboseMode do something or get rid of it
  * colours!!!
+ * sometimes freezes when the net is down, dunno why
  */
 
 // this makes gcc not complain about implicit declarations of popen and pclose
@@ -21,7 +20,7 @@
 #define zenity
 
 // NDEBUG turns off all assert() calls
-// #define NDEBUG
+#define NDEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,14 +39,6 @@
 #include "dwm-status-defs.h"
 
 const char * program_name;
-bool verboseMode;
-
-
-void setstatus(const char *str, Display *dpy) {
-    assert (dpy != NULL);
-    XStoreName(dpy, DefaultRootWindow(dpy), str);
-    XSync(dpy, False);
-}
 
 char *getdatetime(void) {
     char *buf;
@@ -55,17 +46,17 @@ char *getdatetime(void) {
     struct tm *resulttm;
 
     if ((buf = malloc(65 * sizeof(char))) == NULL) {
-        fprintf(stderr, "Cannot allocate memory for buf.\n");
+        fputs("Cannot allocate memory for buf.\n", stderr);
         return "time ???";
     }
     result = time(NULL);
     resulttm = localtime(&result);
     if (resulttm == NULL) {
-        fprintf(stderr, "Error getting localtime.\n");
+        fputs("Error getting localtime.\n", stderr);
         return "time ???";
     }
     if (! strftime(buf, sizeof(char)*65-1, TIMESTRING, resulttm)) {
-        fprintf(stderr, "strftime is 0.\n");
+        fputs("strftime is 0.\n", stderr);
         return "time ???";
     }
     return buf;
@@ -77,7 +68,7 @@ int getfiledata(const char *filename) {
     int result;
     fd = fopen(filename, "r");
     if (fd == NULL) {
-        fprintf(stderr, "error in getfiledata()\n");
+        fputs("error in getfiledata()\n", stderr);
         fprintf(stderr, "filename is %s\n", filename);
         fprintf(stderr, "time: %s\n", getdatetime());
         return -1;
@@ -91,10 +82,10 @@ char * getTemperature(void) {
     float temper = (float) getfiledata(TEMPERATURE) / 1000.0;
     char * result; // will be returned
     int code; // for colouring
-    if (temper > 75) {
-        code = 2; // yellow
-    } else if (temper > 85) {
+    if (temper > 85) {
         code = 1; // red
+    } else if (temper > 75) {
+        code = 2; // yellow
     } else if (temper < 60) {
         code = 6; // blue 
     } else {
@@ -104,29 +95,15 @@ char * getTemperature(void) {
     return result;
 }
 
-
 char * getBattery(void) {
     int capacity;
     bool chargin = false;
-//     capacity = getfiledata("/sys/class/power_supply/BAT0/capacity");
     capacity = getfiledata(BATT_CAPACITY);
-
-#ifdef experimental_alarm
-    // alarm never seems to be anything but 0 ?_?
-    int alarm;
-    alarm = getfiledata("/sys/class/power_supply/BAT0/alarm");
-    fprintf(stdout, "alarm is %d\n", alarm);
-    if (alarm == 1) {
-        fprintf(stderr, "low battery warning\n");
-        system("zenity --warning --text='low battery!'"); 
-    }
-#endif
-
     if (capacity < 95) {
         FILE *fd;
         fd = fopen(BATT_STATUS, "r");
         if (fd == NULL) {
-            fprintf(stderr, "Error opening BATT_STATUS.\n");
+            fputs("Error opening BATT_STATUS.\n", stderr);
             return "??%";
         }
 
@@ -141,7 +118,7 @@ char * getBattery(void) {
 //         if ( ! strncmp(status, "Discharging", 11) ) {
 //         if ( ! chargin) {
         if (! chargin && capacity <= WARN_LOW_BATT) {
-            fprintf(stderr, "low battery warning\n");
+            fputs("low battery warning\n", stderr);
 #ifdef zenity
             // display a warning on low battery and not plugged in. 
             // depends on zenity
@@ -169,40 +146,28 @@ char * getBattery(void) {
         code = 1; // red
     }
 
-
     if (asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0)) 
             == -1) {
-        fprintf(stderr, "whoooaaa, test in getBattery was -1");
+        fputs("whoooaaa, test in getBattery was -1", stderr);
         exit(EXIT_FAILURE);
     }
     return result;
 }
 
-void setup_addrinfo(struct addrinfo ** info) {
-    printf("setup_addrinfo\n");
-    int error = getaddrinfo("google.com", "80", NULL, info);
-    if (error != 0) {
-        fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-    }   
-    printf("end setup_addrinfo\n");
-    assert (info != NULL && *info != NULL);
-}
-
 char * net(void) {
-//     printf("start newnet()\n");
-
     struct addrinfo * info = NULL;
-//     setup_addrinfo(&info);
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
         return "error";
     }   
-    assert (info != NULL);
+    if (info == NULL) {
+        return "could not getaddrinfo";
+    }
 
-//     printf("making socket\n");
+//     puts("making socket\n");
     int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
-//     printf("connecting \n");
+//     puts("connecting \n");
     char * result; // will be returned
     int success; // check the return value of asprintf
     if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
@@ -211,31 +176,30 @@ char * net(void) {
         success = asprintf(&result, "%sOK%s", getColour(3), getColour(0));
     }
     if (success == -1) {
-        fprintf(stderr, "error, unable to malloc() in asprintf()");
+        fputs("error, unable to malloc() in asprintf()", stderr);
         return "error";
     }
     return result;
 }
 
 double * getAvgs(void) {
-    // THIS is PRETTy DUMB! 
+    // you should call free after using this, methinks!
+    // is this dumb?
     // you could just read from /proc/loadavg instead...
+    // i dunno, the system call is probably just as good...
     // must return exactly 3 doubles 
     double * avgs = malloc(3 * sizeof(double));
     int num_avgs = getloadavg(avgs, 3);
     assert (num_avgs == 3);
-//     assert (getloadavg(avgs, 3) == 3);
-    /*
     if (num_avgs < 3) {
         if (num_avgs == -1) {
-            fprintf(stderr, "num_avgs is -1");
+            fputs("num_avgs is -1", stderr);
             num_avgs = 0;
         } 
         for (int i = num_avgs; i < 3; i++) {
             avgs[i] = 9.9;
         }
     }
-    */
     return avgs;
 }
 
@@ -245,7 +209,7 @@ char * getAvgs(void) {
     if (getloadavg(avgs, 3) < 0) {
         perror("getloadavg broke");
         // return "oops";
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return smprintf("%.2f %.2f %.2f", avgs[0], avgs[1], avgs[2]);
 }
@@ -254,10 +218,10 @@ char * getAvgs(void) {
 void usage(FILE * stream, int exit_code) {
     // prints what's up to stream, then quits with status exit_code
     fprintf(stream, "usage: %s [args]\n", program_name);
-    fprintf(stream, " -h --help         display this message\n");
-    fprintf(stream, " -v --verbose      verbose mode\n");
-    fprintf(stream, " -d --daemon       run in background\n");
-    fprintf(stream, " -r --report       report status immediately (default)\n");
+    fputs(" -h --help         display this message\n", stream);
+    fputs(" -u --update       update the x root window once\n", stream);
+    fputs(" -d --daemon       run in background\n", stream);
+    fputs(" -r --report       report status immediately (default)\n", stream);
     exit(exit_code);
 }
 
@@ -280,6 +244,8 @@ char * getColour(int code) {
         case 5:
             return "\x1b[38;5;46m"; // bright green
         case 6:
+            return "\x1b[38;5;45m"; // bright blue
+        case 7:
             return "\x1b[38;5;21m"; // blue
         default:
             return "";
@@ -287,42 +253,36 @@ char * getColour(int code) {
 }
 
 int main(int argc, char * argv[]) {
-    program_name = argv[0];
+    program_name = argv[0]; // global
 
     /* list available args */
-    const char * const shortOptions = "hvdr";
+    const char * const shortOptions = "hdru";
     const struct option longOptions[] = {
         {"help", 0, NULL, 'h'},
-        // if verboseMode was an int, you could do this:
-        // this means if --verbose is in the args, set verboseMode to 1
-//         {"verbose", 0, &verboseMode, 1}, 
-        {"verbose", 0, NULL, 'v'}, 
         {"daemon", 0, NULL, 'd'},
         {"report", 0, NULL, 'r'},
+        {"update", 0, NULL, 'u'},
     };
 
     /* parse args */
     int nextOption;
     bool daemonMode = false;
-//     bool verboseMode = false;
-    verboseMode = false;
+    bool updateOnce = false;
 
     do {
         nextOption = getopt_long(argc, argv, shortOptions, longOptions, NULL);
         switch (nextOption) {
             case 'h':
                 usage(stdout, 0);
-            case 'v':
-//                 printf("goin into verbose mode\n");
-                verboseMode = true;
-                break;
             case 'd':
-//                 printf("goin into daemon mode\n");
                 daemonMode = true;
                 break;
             case 'r':
-//                 printf("goin into default mode\n");
                 daemonMode = false;
+                updateOnce = false;
+                break;
+            case 'u':
+                updateOnce = true;
                 break;
             case '?':
                 usage(stderr, 1);
@@ -331,146 +291,66 @@ int main(int argc, char * argv[]) {
             default:
                 // when does this happen? 
                 printf("what? exiting\n");
-                exit(100);
+                exit(EXIT_FAILURE);
         }
     } while (nextOption != -1);
 
     static Display *dpy;
-    if (!(dpy = XOpenDisplay(NULL))) {
-        fprintf(stderr, "Cannot open display.\n");
-        return EXIT_FAILURE;
-    }
-
-    // updateStatus once first to initialize the static variables sent and recv
-    updateStatus(dpy); // i know, it's wasteful
 
     if (daemonMode) {
+        if (!(dpy = XOpenDisplay(NULL))) {
+            fputs("Cannot open display.\n", stderr);
+            return EXIT_FAILURE;
+        }
         daemon(0,0);
         for (; ; sleep(SLEEP_INTERVAL)) {
-            updateStatus(dpy);
+            setStatus(dpy);
         }
-    } 
-
-    updateStatus(dpy);
-    /*
-    if (verboseMode) { // this is currently the only place verboseMode is used
-        printf("now quittin!\n"); // LOL
+    } else {
+        if (updateOnce) {
+            if (!(dpy = XOpenDisplay(NULL))) {
+                fputs("Cannot open display.\n", stderr);
+                return EXIT_FAILURE;
+            }
+            setStatus(dpy);
+        } else {
+            puts(buildStatus());
+        }
     }
-    */
     return 0;
 }
 
-void updateStatus(Display *dpy) {
-	static unsigned long long int recv, sent;
-    static char * status;
-    double * avgs = getAvgs();
-    // calling parse_netdev() first will initialize recv and sent to
-    // useful values, but if i do this here, parse_netdev() will be called
-    // every time updateStatus() is called, resulting in bad values
-// 	parse_netdev(&recv, &sent);
+void setStatus(Display *dpy) {
+    char * status = buildStatus();
+    assert (dpy != NULL);
+    XStoreName(dpy, DefaultRootWindow(dpy), status);
+    XSync(dpy, False);
+    free(status);
+}
 
+char * buildStatus(void) {
+    // you need to call free() after calling this function!
+    char * status;
+    double * avgs = getAvgs();
+    char * batt = getBattery();
+    char * temper = getTemperature();
+    char * netOK = net();
+    char * time = getdatetime();
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
     if (asprintf(&status, OUTFORMAT,
                  avgs[0], avgs[1], avgs[2],
-                 get_netusage(&recv, &sent),
-                 getBattery(),
-                 getTemperature(),
-                 getfiledata(MAILFILE), 
-                 net(), getdatetime()) == -1) {
-        fprintf(stderr, "error, unable to malloc() in asprintf()");
-        exit(1);
+                 batt,
+                 temper,
+                 getfiledata(MAILFILE),
+                 netOK, time) == -1) {
+        fputs("error, unable to malloc() in asprintf()", stderr);
+        exit(EXIT_FAILURE);
     }
-
-    if (verboseMode) {
-        printf("%s\n", status);
-    }
-
-    setstatus(status, dpy);
-    free(status);
-}
-
-
-/* --------------------------------------------------  
-   net stuff begins here, with thanks to anonymous suckless contributor
-   */
-
-bool parse_netdev(unsigned long long int *receivedabs, 
-                  unsigned long long int *sentabs) {
-	static const int bufsize = 255;
-	char buf[bufsize];
-	char *datastart;
-	bool success; // will be returned
-	FILE *devfd;
-	unsigned long long int receivedacc, sentacc;
-
-	devfd = fopen("/proc/net/dev", "r");
-	success = false;
-
-	// Ignore the first two lines of the file
-	fgets(buf, bufsize, devfd);
-	fgets(buf, bufsize, devfd);
-
-	while (fgets(buf, bufsize, devfd)) {
-	    if ((datastart = strstr(buf, "lo:")) == NULL) {
-            datastart = strstr(buf, ":");
-
-            // With thanks to the conky project at http://conky.sourceforge.net/
-            sscanf(datastart + 1, "%llu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %llu",\
-                   &receivedacc, &sentacc);
-            *receivedabs += receivedacc;
-            *sentabs += sentacc;
-            success = true;
-	    }
-	}
-
-	fclose(devfd);
-	return success;
-}
-
-char * calculate_speed(unsigned long long int newval, 
-                       unsigned long long int oldval) {
-    char * speedstr; // will be returned
-	double speed;
-    char unit;
-
-	speed = (newval - oldval) / 1024.0;
-	if (speed > 1024.0) {
-	    speed /= 1024.0;
-        unit = 'M';
-	} else {
-        unit = 'k';
-	}
-
-    // pad the beginning of the string so it uses the same space for all sizes
-    if (asprintf(&speedstr, "%6.2f%c", speed, unit) == -1) {
-        return "??";
-    }
-    return speedstr;
-}
-
-char * get_netusage(unsigned long long int *recv, 
-                    unsigned long long int *sent) {
-    // this function has the side effect of updating the values of recv and sent
-	unsigned long long int newrecv, newsent;
-	newrecv = newsent = 0;
-
-	bool retval = parse_netdev(&newrecv, &newsent);
-	if (! retval) {
-	    fprintf(stderr, "Error when parsing /proc/net/dev file.\n");
-	    return "V: ?? Λ: ??";
-	}
-
-	char * downspeedstr = calculate_speed(newrecv, *recv);
-	char * upspeedstr = calculate_speed(newsent, *sent);
-
-	char * netusage; // will be returned
-	if (asprintf(&netusage, "V:%s Λ:%s", downspeedstr, upspeedstr) == -1) {
-	    fprintf(stderr, "Error when parsing /proc/net/dev file.\n");
-	    return "V: ?? Λ: ??";
-    }
-
-	*recv = newrecv;
-	*sent = newsent;
-	return netusage;
+    free(avgs);
+    free(batt);
+    free(temper);
+    free(netOK);
+    free(time);
+    return status;
 }
