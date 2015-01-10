@@ -1,12 +1,11 @@
 /* 
  * 9.9
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
- * last updated dec 25 2014
+ * last updated jan 10 2015
  * also, replace getAvgs() with a read from /proc/loadavg
  *    uhh, if you feel like it...
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * colours!!!
- * sometimes freezes when the net is down, dunno why
  */
 
 // this makes gcc not complain about implicit declarations of popen and pclose
@@ -156,28 +155,40 @@ char * getBattery(void) {
 
 char * net(void) {
     struct addrinfo * info = NULL;
+    char * result; // will be returned
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-        return "error";
-    }   
-    if (info == NULL) {
-        return "could not getaddrinfo";
-    }
-
-//     puts("making socket\n");
-    int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
-//     puts("connecting \n");
-    char * result; // will be returned
-    int success; // check the return value of asprintf
-    if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
-        success = asprintf(&result, "%sNET%s", getColour(1), getColour(0));
+//         return "error";
+//         result = "error";
+        if (asprintf(&result, "error") == -1) {
+            fputs("error, what do i even do now? oh no!\n", stderr);
+            result = malloc(9 * sizeof(char));
+            snprintf(result, 9, "%s", "soborked");
+        }
+    } else if (info == NULL) {
+//         return "could not getaddrinfo";
+//         result = "could not getaddrinfo";
+        if (asprintf(&result, "could not getaddrinfo") == -1) {
+            fputs("error, what do i even do now? aah!", stderr);
+            result = malloc(9 * sizeof(char));
+            snprintf(result, 9, "%s", "soborked");
+        }
     } else {
-        success = asprintf(&result, "%sOK%s", getColour(3), getColour(0));
-    }
-    if (success == -1) {
-        fputs("error, unable to malloc() in asprintf()", stderr);
-        return "error";
+//         puts("making socket\n");
+        int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
+//         puts("connecting \n");
+        int success; // check the return value of asprintf
+        if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
+            success = asprintf(&result, "%sNET%s", getColour(1), getColour(0));
+        } else {
+            success = asprintf(&result, "%sOK%s", getColour(3), getColour(0));
+        }
+        if (success == -1) {
+            fputs("error, unable to malloc() in asprintf()", stderr);
+//             return "error";
+            result = "soborked";
+        }
     }
     return result;
 }
@@ -231,24 +242,15 @@ char * getColour(int code) {
     // code 0 returns a reset string
     // code -1 returns empty string
     switch (code) {
-        case 0: 
-            return "\x1b[0m"; // reset 
-        case 1:
-            return "\x1b[38;5;196m"; // red
-        case 2:
-            return "\x1b[38;5;190m"; // yellow
-        case 3:
-            return "\x1b[38;5;34m"; // deep green
-        case 4:
-            return "\x1b[38;5;199m"; // magenta
-        case 5:
-            return "\x1b[38;5;46m"; // bright green
-        case 6:
-            return "\x1b[38;5;45m"; // bright blue
-        case 7:
-            return "\x1b[38;5;21m"; // blue
-        default:
-            return "";
+        case 0: return "\x1b[0m"; // reset 
+        case 1: return "\x1b[38;5;196m"; // red
+        case 2: return "\x1b[38;5;190m"; // yellow
+        case 3: return "\x1b[38;5;34m"; // deep green
+        case 4: return "\x1b[38;5;199m"; // magenta
+        case 5: return "\x1b[38;5;46m"; // bright green
+        case 6: return "\x1b[38;5;45m"; // bright blue
+        case 7: return "\x1b[38;5;21m"; // blue
+        default: return "";
     }
 }
 
@@ -299,7 +301,8 @@ int main(int argc, char * argv[]) {
 
     if (daemonMode) {
         if (!(dpy = XOpenDisplay(NULL))) {
-            fputs("Cannot open display.\n", stderr);
+            fputs("Cannot open display. are you _sure_ X11 is running?\n",
+                   stderr);
             return EXIT_FAILURE;
         }
         daemon(0,0);
@@ -309,7 +312,8 @@ int main(int argc, char * argv[]) {
     } else {
         if (updateOnce) {
             if (!(dpy = XOpenDisplay(NULL))) {
-                fputs("Cannot open display.\n", stderr);
+                fputs("Cannot open display. Are you _sure_ X11 is running?\n",
+                       stderr);
                 return EXIT_FAILURE;
             }
             setStatus(dpy);
@@ -342,7 +346,6 @@ char * buildStatus(void) {
                  avgs[0], avgs[1], avgs[2],
                  batt,
                  temper,
-                 getfiledata(MAILFILE),
                  netOK, time) == -1) {
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(EXIT_FAILURE);
