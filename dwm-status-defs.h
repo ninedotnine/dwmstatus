@@ -5,7 +5,8 @@
 #define TIMESTRING "[%a %b %d] %H:%M"
 // the format for everything
 // const char OUTFORMAT[] "[%.2f %.2f %.2f] [%s] [%s] [%s] [mail %d] [%s] %s"
-#define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [mail %d] [%s] %s"
+// #define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [mail %d] [%s] %s"
+#define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery
 #define WARN_LOW_BATT 9
 // this is not currently implemented at all...
@@ -20,6 +21,6 @@
 #define BATT_STATUS   "/sys/class/power_supply/BAT0/status"
 
 // files -- populated by cron
-#define MAILFILE "/tmp/dwm-status.mail"
+// #define MAILFILE "/tmp/dwm-status.mail"
 // #define PKGFILE "/tmp/dwm-status.packages"
 // #define FBCMDFILE "/tmp/dwm-status.fbcmd"
