@@ -188,9 +188,9 @@ char * net(void) {
 //         puts("connecting \n");
         int success; // check the return value of asprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
-            success = asprintf(&result, "%sNET%s", getColour(1), getColour(0));
+            success = asprintf(&result, "%sNET%s", COLO_RED, COLO_RESET);
         } else {
-            success = asprintf(&result, "%sOK%s", getColour(3), getColour(0));
+            success = asprintf(&result, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
         }
         if (success == -1) {
             fputs("error, unable to malloc() in asprintf()", stderr);
@@ -249,24 +249,6 @@ void usage(FILE * stream, int exit_code) {
     fputs(" -d --daemon       run in background\n", stream);
     fputs(" -r --report       report status immediately (default)\n", stream);
     exit(exit_code);
-}
-
-char * getColour(int code) {
-    // one way to display all available colours: weechat --colors
-    // positive codes return various colours
-    // code 0 returns a reset string
-    // code -1 returns empty string
-    switch (code) {
-        case 0: return "\x1b[0m"; // reset 
-        case 1: return "\x1b[38;5;196m"; // red
-        case 2: return "\x1b[38;5;190m"; // yellow
-        case 3: return "\x1b[38;5;34m"; // deep green
-        case 4: return "\x1b[38;5;199m"; // magenta
-        case 5: return "\x1b[38;5;46m"; // bright green
-        case 6: return "\x1b[38;5;45m"; // bright blue
-        case 7: return "\x1b[38;5;21m"; // blue
-        default: return "";
-    }
 }
 
 int main(int argc, char * argv[]) {
