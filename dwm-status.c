@@ -37,6 +37,15 @@
 
 #include "dwm-status-defs.h"
 
+#define COLO_RESET "\x1b[0m" // reset 
+#define COLO_RED "\x1b[38;5;196m" // red
+#define COLO_YELLOW "\x1b[38;5;190m" // yellow
+#define COLO_DEEPGREEN "\x1b[38;5;34m" // deep green
+#define COLO_MAGENTA "\x1b[38;5;199m" // magenta
+#define COLO_BRIGHTGREEN "\x1b[38;5;46m" // bright green
+#define COLO_CYAN "\x1b[38;5;45m" // bright blue
+#define COLO_BLUE "\x1b[38;5;21m" // blue
+
 const char * program_name;
 
 char *getdatetime(void) {
@@ -80,17 +89,17 @@ int getfiledata(const char *filename) {
 char * getTemperature(void) {
     float temper = (float) getfiledata(TEMPERATURE) / 1000.0;
     char * result; // will be returned
-    int code; // for colouring
+    char * colo; // for colouring
     if (temper > 85) {
-        code = 1; // red
+        colo = COLO_RED; // red
     } else if (temper > 75) {
-        code = 2; // yellow
+        colo = COLO_YELLOW;
     } else if (temper < 60) {
-        code = 6; // blue 
+        colo = COLO_CYAN;
     } else {
-        code = -1; // empty string 
+        colo = ""; // empty string 
     }
-    asprintf(&result, "%s%02.1f°C%s", getColour(code), temper, getColour(0));
+    asprintf(&result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
     return result;
 }
 
@@ -132,21 +141,20 @@ char * getBattery(void) {
 
     // colourize the result
     char * result; // will be returned
-    int code;
+    char * colo;
     if (chargin) {
-        code = 4; // magenta
+        colo = COLO_MAGENTA; // magenta
     } else if (capacity > 70) {
-        code = 3; // deep green
+        colo = COLO_DEEPGREEN; // deep green
     } else if (capacity > 30) {
-        code = 6; // blue
+        colo = COLO_CYAN; // cyan
     } else if (capacity > WARN_LOW_BATT) {
-        code = 2; // yellow
+        colo = COLO_YELLOW; // yellow
     } else {
-        code = 1; // red
+        colo = COLO_RED; // red
     }
 
-    if (asprintf(&result, "%s%i%%%s", getColour(code), capacity, getColour(0)) 
-            == -1) {
+    if (asprintf(&result, "%s%i%%%s", colo, capacity, COLO_RESET) == -1) {
         fputs("whoooaaa, test in getBattery was -1", stderr);
         exit(EXIT_FAILURE);
     }
