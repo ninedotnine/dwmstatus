@@ -73,7 +73,7 @@ char *getdatetime(void) {
 int getfiledata(const char *filename) {
     // this function parses an int from filename 
     FILE *fd;
-    int result;
+    int result; // returned
     fd = fopen(filename, "r");
     if (fd == NULL) {
         fputs("error in getfiledata()\n", stderr);
@@ -91,7 +91,7 @@ char * getTemperature(void) {
     char * result; // will be returned
     char * colo; // for colouring
     if (temper > 85) {
-        colo = COLO_RED; // red
+        colo = COLO_RED;
     } else if (temper > 75) {
         colo = COLO_YELLOW;
     } else if (temper < 60) {
@@ -141,17 +141,17 @@ char * getBattery(void) {
 
     // colourize the result
     char * result; // will be returned
-    char * colo;
+    char * colo; // colour code
     if (chargin) {
-        colo = COLO_MAGENTA; // magenta
+        colo = COLO_MAGENTA;
     } else if (capacity > 70) {
-        colo = COLO_DEEPGREEN; // deep green
+        colo = COLO_DEEPGREEN;
     } else if (capacity > 30) {
-        colo = COLO_CYAN; // cyan
+        colo = COLO_CYAN;
     } else if (capacity > WARN_LOW_BATT) {
-        colo = COLO_YELLOW; // yellow
+        colo = COLO_YELLOW;
     } else {
-        colo = COLO_RED; // red
+        colo = COLO_RED;
     }
 
     if (asprintf(&result, "%s%i%%%s", colo, capacity, COLO_RESET) == -1) {
