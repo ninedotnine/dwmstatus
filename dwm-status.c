@@ -200,6 +200,11 @@ double * getAvgs(void) {
     // i dunno, the system call is probably just as good...
     // must return exactly 3 doubles 
     double * avgs = malloc(3 * sizeof(double));
+//     double avgs[3];
+//     double ** a;
+//     a = &avgs;
+//     puts("okay");
+//     int num_avgs = getloadavg((*avgs), 3);
     int num_avgs = getloadavg(avgs, 3);
     assert (num_avgs == 3);
     if (num_avgs < 3) {
@@ -208,9 +213,11 @@ double * getAvgs(void) {
             num_avgs = 0;
         } 
         for (int i = num_avgs; i < 3; i++) {
+//             *avgs[i] = 9.9;
             avgs[i] = 9.9;
         }
     }
+//     return *avgs;
     return avgs;
 }
 
