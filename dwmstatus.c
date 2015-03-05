@@ -30,12 +30,12 @@
 #include <X11/Xlib.h>
 #include <getopt.h>
 #include <stdbool.h>
-#include "dwm-status.h"
+#include "dwmstatus.h"
 #include <netdb.h>
 // #include <sys/types.h>
 // #include <sys/socket.h>
 
-#include "dwm-status-defs.h"
+#include "dwmstatus-defs.h"
 
 #define COLO_RESET "\x1b[0m" // reset 
 #define COLO_RED "\x1b[38;5;196m" // red
