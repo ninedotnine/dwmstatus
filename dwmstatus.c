@@ -296,27 +296,22 @@ int main(int argc, char * argv[]) {
 
     static Display *dpy;
 
-    if (daemonMode) {
+    if (daemonMode || updateOnce) {
         if (!(dpy = XOpenDisplay(NULL))) {
             fputs("Cannot open display. are you _sure_ X11 is running?\n",
                    stderr);
             return EXIT_FAILURE;
         }
-        daemon(0,0);
-        for (; ; sleep(SLEEP_INTERVAL)) {
+        if (daemonMode) {
+            daemon(0,0);
+            for (; ; sleep(SLEEP_INTERVAL)) {
+                setStatus(dpy);
+            }
+        } else {
             setStatus(dpy);
         }
     } else {
-        if (updateOnce) {
-            if (!(dpy = XOpenDisplay(NULL))) {
-                fputs("Cannot open display. Are you _sure_ X11 is running?\n",
-                       stderr);
-                return EXIT_FAILURE;
-            }
-            setStatus(dpy);
-        } else {
-            puts(buildStatus());
-        }
+        puts(buildStatus());
     }
     return 0;
 }
