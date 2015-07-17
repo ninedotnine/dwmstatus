@@ -122,6 +122,7 @@ char * getBattery(void) {
         fclose(fd);
 
         chargin = (0 != strncmp(status, "Discharging", 11));
+        free(status);
 //         printf("chargin: %s\n", (chargin) ? "true" : "false");
 //         if ( ! strncmp(status, "Discharging", 11) ) {
 //         if ( ! chargin) {
@@ -198,6 +199,7 @@ char * net(void) {
             result = "soborked";
         }
     }
+    freeaddrinfo(info);
     return result;
 }
 
