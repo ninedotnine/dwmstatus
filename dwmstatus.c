@@ -48,11 +48,11 @@ char *getdatetime(void) {
     resulttm = localtime(&result);
     if (resulttm == NULL) {
         fputs("Error getting localtime.\n", stderr);
-        return "time ???";
+        sprintf(buf, "time ???");
     }
     if (! strftime(buf, sizeof(char)*65-1, TIMESTRING, resulttm)) {
         fputs("strftime is 0.\n", stderr);
-        return "time ???";
+        sprintf(buf, "time ????");
     }
     return buf;
 }
@@ -93,13 +93,15 @@ char * getTemperature(void) {
 char * getBattery(void) {
     int capacity;
     bool chargin = false;
+    char * result;
     capacity = getfiledata(BATT_CAPACITY);
     if (capacity < 95) {
         FILE *fd;
         fd = fopen(BATT_STATUS, "r");
         if (fd == NULL) {
             fputs("Error opening BATT_STATUS.\n", stderr);
-            return "??%";
+            asprintf(&result, "%s? %d%%%s", COLO_RED, capacity, COLO_RESET);
+            return result;
         }
 
         char * status;
@@ -126,7 +128,6 @@ char * getBattery(void) {
     }
 
     // colourize the result
-    char * result;
     char * colo;
     if (chargin) {
         colo = COLO_MAGENTA;
