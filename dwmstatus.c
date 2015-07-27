@@ -291,11 +291,16 @@ char * buildStatus(void) {
     // you need to call free() after calling this function!
     char * status;
     static double avgs[3];
+    static char * batt;
+    static char * temper;
+    static char * netOK;
+    static char * time;
+
     getAvgs(&avgs);
-    char * batt = getBattery();
-    char * temper = getTemperature();
-    char * netOK = net();
-    char * time = getdatetime();
+    batt = getBattery();
+    temper = getTemperature();
+    netOK = net();
+    time = getdatetime();
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
     if (asprintf(&status, OUTFORMAT,
