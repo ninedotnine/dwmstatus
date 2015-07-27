@@ -1,6 +1,6 @@
 char *getdatetime(void); 
 int getfiledata(const char *filename); 
-char * getTemperature(void);
+void getTemperature(char * (* const result));
 char * getBattery(void);
 void net(char * (* const netOK));
 void getAvgs(double (* avgs2)[3]);

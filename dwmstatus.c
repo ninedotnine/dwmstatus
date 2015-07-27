@@ -73,9 +73,8 @@ int getfiledata(const char *filename) {
     return result;
 }
 
-char * getTemperature(void) {
+void getTemperature(char * (* const result)) {
     float temper = (float) getfiledata(TEMPERATURE) / 1000.0;
-    char * result;
     char * colo;
     if (temper > 85) {
         colo = COLO_RED;
@@ -86,8 +85,7 @@ char * getTemperature(void) {
     } else {
         colo = ""; // empty string for no colour
     }
-    asprintf(&result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
-    return result;
+    asprintf(result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
 }
 
 char * getBattery(void) {
@@ -296,7 +294,7 @@ char * buildStatus(void) {
 
     getAvgs(&avgs);
     batt = getBattery();
-    temper = getTemperature();
+    getTemperature(&temper);
     net(&netOK);
     time = getdatetime();
     // thank you, _GNU_SOURCE, for asprintf
