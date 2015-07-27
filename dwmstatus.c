@@ -35,15 +35,6 @@
 
 #include "dwmstatus-defs.h"
 
-#define COLO_RESET "\x1b[0m" // reset 
-#define COLO_RED "\x1b[38;5;196m" // red
-#define COLO_YELLOW "\x1b[38;5;190m" // yellow
-#define COLO_DEEPGREEN "\x1b[38;5;34m" // deep green
-#define COLO_MAGENTA "\x1b[38;5;199m" // magenta
-#define COLO_BRIGHTGREEN "\x1b[38;5;46m" // bright green
-#define COLO_CYAN "\x1b[38;5;45m" // bright blue
-#define COLO_BLUE "\x1b[38;5;21m" // blue
-
 const char * program_name;
 
 char *getdatetime(void) {
@@ -53,7 +44,7 @@ char *getdatetime(void) {
 
     if ((buf = malloc(65 * sizeof(char))) == NULL) {
         fputs("Cannot allocate memory for buf.\n", stderr);
-        return "time ???";
+        exit(10);
     }
     result = time(NULL);
     resulttm = localtime(&result);
@@ -114,7 +105,9 @@ char * getBattery(void) {
         }
 
         char * status;
-        status = malloc(15 * sizeof(char));
+        if ((status = malloc(15 * sizeof(char))) == NULL) {
+            exit(11);
+        }
 //         fscanf(fd, "%s", status);
         fgets(status, 15, fd);
         fclose(fd);
@@ -170,7 +163,9 @@ char * net(void) {
 //         result = "error";
         if (asprintf(&result, "error") == -1) {
             fputs("error, what do i even do now? oh no!\n", stderr);
-            result = malloc(9 * sizeof(char));
+            if ((result = malloc(9 * sizeof(char))) == NULL) {
+                exit(12);
+            }
             snprintf(result, 9, "%s", "soborked");
         }
     } else if (info == NULL) {
@@ -178,7 +173,9 @@ char * net(void) {
 //         result = "could not getaddrinfo";
         if (asprintf(&result, "could not getaddrinfo") == -1) {
             fputs("error, what do i even do now? aah!", stderr);
-            result = malloc(9 * sizeof(char));
+            if ((result = malloc(9 * sizeof(char))) == NULL) {
+                exit(13);
+            }
             snprintf(result, 9, "%s", "soborked");
         }
     } else {
@@ -194,7 +191,8 @@ char * net(void) {
         if (success == -1) {
             fputs("error, unable to malloc() in asprintf()", stderr);
 //             return "error";
-            result = "soborked";
+//             result = "soborked";
+            exit(14);
         }
     }
     freeaddrinfo(info);
@@ -208,6 +206,10 @@ double * getAvgs(void) {
     // i dunno, the system call is probably just as good...
     // must return exactly 3 doubles 
     double * avgs = malloc(3 * sizeof(double));
+    if (avgs == NULL) {
+        exit(15);
+    }
+
 //     double avgs[3];
 //     double ** a;
 //     a = &avgs;
@@ -303,7 +305,8 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            daemon(0,0);
+            daemon(0, 1);
+            fputs("daemoned\n", stderr); // for debugging
             for (; ; sleep(SLEEP_INTERVAL)) {
                 setStatus(dpy);
             }
