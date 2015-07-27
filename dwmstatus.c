@@ -148,34 +148,33 @@ char * getBattery(void) {
     return result;
 }
 
-char * net(void) {
+void net(char * (* const netOK)) {
     struct addrinfo * info = NULL;
-    char * result;
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-        if (asprintf(&result, "error") == -1) {
+        if (asprintf(netOK, "error") == -1) {
             fputs("error, what do i even do now? oh no!\n", stderr);
-            if ((result = malloc(9 * sizeof(char))) == NULL) {
+            if (((*netOK) = malloc(9 * sizeof(char))) == NULL) {
                 exit(12);
             }
-            snprintf(result, 9, "%s", "soborked");
+            snprintf((*netOK), 9, "%s", "soborked");
         }
     } else if (info == NULL) {
-        if (asprintf(&result, "could not getaddrinfo") == -1) {
+        if (asprintf(netOK, "could not getaddrinfo") == -1) {
             fputs("error, what do i even do now? aah!", stderr);
-            if ((result = malloc(9 * sizeof(char))) == NULL) {
+            if (((*netOK) = malloc(9 * sizeof(char))) == NULL) {
                 exit(13);
             }
-            snprintf(result, 9, "%s", "soborked");
+            snprintf((*netOK), 9, "%s", "soborked");
         }
     } else {
         int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
         int success; // check the return value of asprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
-            success = asprintf(&result, "%sNET%s", COLO_RED, COLO_RESET);
+            success = asprintf(netOK, "%sNET%s", COLO_RED, COLO_RESET);
         } else {
-            success = asprintf(&result, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
+            success = asprintf(netOK, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
         }
         if (success == -1) {
             fputs("error, unable to malloc() in asprintf()", stderr);
@@ -183,7 +182,6 @@ char * net(void) {
         }
     }
     freeaddrinfo(info);
-    return result;
 }
 
 void getAvgs(double (* avgs)[3]) {
@@ -299,7 +297,7 @@ char * buildStatus(void) {
     getAvgs(&avgs);
     batt = getBattery();
     temper = getTemperature();
-    netOK = net();
+    net(&netOK);
     time = getdatetime();
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
