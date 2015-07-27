@@ -35,12 +35,11 @@
 
 const char * program_name;
 
-char *getdatetime(void) {
-    char *buf;
+void getdatetime(char * (* const input)) {
     time_t result;
     struct tm *resulttm;
 
-    if ((buf = malloc(65 * sizeof(char))) == NULL) {
+    if (((*input) = malloc(65 * sizeof(char))) == NULL) {
         fputs("Cannot allocate memory for buf.\n", stderr);
         exit(10);
     }
@@ -48,13 +47,12 @@ char *getdatetime(void) {
     resulttm = localtime(&result);
     if (resulttm == NULL) {
         fputs("Error getting localtime.\n", stderr);
-        sprintf(buf, "time ???");
+        sprintf((*input), "time ???");
     }
-    if (! strftime(buf, sizeof(char)*65-1, TIMESTRING, resulttm)) {
+    if (! strftime((*input), sizeof(char)*65-1, TIMESTRING, resulttm)) {
         fputs("strftime is 0.\n", stderr);
-        sprintf(buf, "time ????");
+        sprintf((*input), "time ????");
     }
-    return buf;
 }
 
 int getfiledata(const char *filename) {
@@ -65,7 +63,9 @@ int getfiledata(const char *filename) {
     if (fd == NULL) {
         fputs("error in getfiledata()\n", stderr);
         fprintf(stderr, "filename is %s\n", filename);
-        fprintf(stderr, "time: %s\n", getdatetime());
+        char ** dumb = NULL;
+        getdatetime(dumb);
+        fprintf(stderr, "time: %s\n", (*dumb));
         return -1;
     }
     fscanf(fd, "%d", &result);
@@ -296,7 +296,7 @@ char * buildStatus(void) {
     getBattery(&batt);
     getTemperature(&temper);
     net(&netOK);
-    time = getdatetime();
+    getdatetime(&time);
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
     if (asprintf(&status, OUTFORMAT,

@@ -1,4 +1,4 @@
-char *getdatetime(void);
+void getdatetime(char * (* const input));
 int getfiledata(const char *filename);
 void getTemperature(char * (* const result));
 void getBattery(char * (* const batt));
