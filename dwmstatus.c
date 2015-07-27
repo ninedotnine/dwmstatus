@@ -194,7 +194,7 @@ void getAvgs(double (* avgs)[3]) {
     assert (num_avgs == 3);
     if (num_avgs < 3) {
         if (num_avgs == -1) {
-            fputs("num_avgs is -1", stderr);
+            fputs("num_avgs is -1\n", stderr);
             num_avgs = 0;
         } 
         for (int i = num_avgs; i < 3; i++) {
