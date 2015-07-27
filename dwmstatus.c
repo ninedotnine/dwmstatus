@@ -30,8 +30,6 @@
 #include <stdbool.h>
 #include "dwmstatus.h"
 #include <netdb.h>
-// #include <sys/types.h>
-// #include <sys/socket.h>
 
 #include "dwmstatus-defs.h"
 
@@ -62,7 +60,7 @@ char *getdatetime(void) {
 int getfiledata(const char *filename) {
     // this function parses an int from filename 
     FILE *fd;
-    int result; // returned
+    int result;
     fd = fopen(filename, "r");
     if (fd == NULL) {
         fputs("error in getfiledata()\n", stderr);
@@ -77,8 +75,8 @@ int getfiledata(const char *filename) {
 
 char * getTemperature(void) {
     float temper = (float) getfiledata(TEMPERATURE) / 1000.0;
-    char * result; // will be returned
-    char * colo; // for colouring
+    char * result;
+    char * colo;
     if (temper > 85) {
         colo = COLO_RED;
     } else if (temper > 75) {
@@ -86,7 +84,7 @@ char * getTemperature(void) {
     } else if (temper < 60) {
         colo = COLO_CYAN;
     } else {
-        colo = ""; // empty string 
+        colo = ""; // empty string for no colour
     }
     asprintf(&result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
     return result;
@@ -108,15 +106,11 @@ char * getBattery(void) {
         if ((status = malloc(15 * sizeof(char))) == NULL) {
             exit(11);
         }
-//         fscanf(fd, "%s", status);
         fgets(status, 15, fd);
         fclose(fd);
 
         chargin = (0 != strncmp(status, "Discharging", 11));
         free(status);
-//         printf("chargin: %s\n", (chargin) ? "true" : "false");
-//         if ( ! strncmp(status, "Discharging", 11) ) {
-//         if ( ! chargin) {
         if (! chargin && capacity <= WARN_LOW_BATT) {
             fputs("low battery warning\n", stderr);
 #ifdef zenity
@@ -132,8 +126,8 @@ char * getBattery(void) {
     }
 
     // colourize the result
-    char * result; // will be returned
-    char * colo; // colour code
+    char * result;
+    char * colo;
     if (chargin) {
         colo = COLO_MAGENTA;
     } else if (capacity > 70) {
@@ -155,12 +149,10 @@ char * getBattery(void) {
 
 char * net(void) {
     struct addrinfo * info = NULL;
-    char * result; // will be returned
+    char * result;
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-//         return "error";
-//         result = "error";
         if (asprintf(&result, "error") == -1) {
             fputs("error, what do i even do now? oh no!\n", stderr);
             if ((result = malloc(9 * sizeof(char))) == NULL) {
@@ -169,8 +161,6 @@ char * net(void) {
             snprintf(result, 9, "%s", "soborked");
         }
     } else if (info == NULL) {
-//         return "could not getaddrinfo";
-//         result = "could not getaddrinfo";
         if (asprintf(&result, "could not getaddrinfo") == -1) {
             fputs("error, what do i even do now? aah!", stderr);
             if ((result = malloc(9 * sizeof(char))) == NULL) {
@@ -179,9 +169,7 @@ char * net(void) {
             snprintf(result, 9, "%s", "soborked");
         }
     } else {
-//         puts("making socket\n");
         int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
-//         puts("connecting \n");
         int success; // check the return value of asprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
             success = asprintf(&result, "%sNET%s", COLO_RED, COLO_RESET);
@@ -190,8 +178,6 @@ char * net(void) {
         }
         if (success == -1) {
             fputs("error, unable to malloc() in asprintf()", stderr);
-//             return "error";
-//             result = "soborked";
             exit(14);
         }
     }
@@ -209,7 +195,6 @@ double * getAvgs(void) {
     if (avgs == NULL) {
         exit(15);
     }
-
 //     double avgs[3];
 //     double ** a;
 //     a = &avgs;
