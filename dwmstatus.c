@@ -88,18 +88,18 @@ void getTemperature(char * (* const result)) {
     asprintf(result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
 }
 
-char * getBattery(void) {
+// char * getBattery(void) {
+void getBattery(char * (* const batt)) {
     int capacity;
     bool chargin = false;
-    char * result;
     capacity = getfiledata(BATT_CAPACITY);
     if (capacity < 95) {
         FILE *fd;
         fd = fopen(BATT_STATUS, "r");
         if (fd == NULL) {
             fputs("Error opening BATT_STATUS.\n", stderr);
-            asprintf(&result, "%s? %d%%%s", COLO_RED, capacity, COLO_RESET);
-            return result;
+            asprintf(batt, "%s? %d%%%s", COLO_RED, capacity, COLO_RESET);
+            return;
         }
 
         char * status;
@@ -139,11 +139,11 @@ char * getBattery(void) {
         colo = COLO_RED;
     }
 
-    if (asprintf(&result, "%s%i%%%s", colo, capacity, COLO_RESET) == -1) {
+    if (asprintf(batt, "%s%i%%%s", colo, capacity, COLO_RESET) == -1) {
         fputs("whoooaaa, test in getBattery was -1", stderr);
         exit(EXIT_FAILURE);
     }
-    return result;
+//     return result;
 }
 
 void net(char * (* const netOK)) {
@@ -293,7 +293,7 @@ char * buildStatus(void) {
     static char * time;
 
     getAvgs(&avgs);
-    batt = getBattery();
+    getBattery(&batt);
     getTemperature(&temper);
     net(&netOK);
     time = getdatetime();
