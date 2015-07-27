@@ -261,8 +261,10 @@ int main(int argc, char * argv[]) {
         if (daemonMode) {
             daemon(0, 1);
             fputs("daemoned\n", stderr); // for debugging
-            for (; ; sleep(SLEEP_INTERVAL)) {
+            for (int i = 0; ; sleep(SLEEP_INTERVAL)) {
+                fprintf(stderr, "iteration %d\n", i); // for debugging
                 setStatus(dpy);
+                i++;
             }
         } else {
             setStatus(dpy);
