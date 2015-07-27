@@ -1,9 +1,7 @@
 /* 
  * 9.9
  * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
- * last updated jan 10 2015
- * also, replace getAvgs() with a read from /proc/loadavg
- *    uhh, if you feel like it...
+ * consider replacing getAvgs() with a read from /proc/loadavg
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * colours!!!
  */
