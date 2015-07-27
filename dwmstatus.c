@@ -88,7 +88,6 @@ void getTemperature(char * (* const result)) {
     asprintf(result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
 }
 
-// char * getBattery(void) {
 void getBattery(char * (* const batt)) {
     int capacity;
     bool chargin = false;
@@ -118,7 +117,7 @@ void getBattery(char * (* const batt)) {
             // depends on zenity
             if (! fork()) { 
                 char * const args[] = {"zenity", "--warning", 
-                                       "--text=you're a fat slut", NULL}; 
+                    "--text=you're a fat slut", NULL}; 
                 execv("/usr/bin/zenity", args);
             }
 #endif
@@ -143,7 +142,6 @@ void getBattery(char * (* const batt)) {
         fputs("whoooaaa, test in getBattery was -1", stderr);
         exit(EXIT_FAILURE);
     }
-//     return result;
 }
 
 void net(char * (* const netOK)) {
@@ -257,7 +255,7 @@ int main(int argc, char * argv[]) {
     if (daemonMode || updateOnce) {
         if (!(dpy = XOpenDisplay(NULL))) {
             fputs("Cannot open display. are you _sure_ X11 is running?\n",
-                   stderr);
+                    stderr);
             return EXIT_FAILURE;
         }
         if (daemonMode) {
