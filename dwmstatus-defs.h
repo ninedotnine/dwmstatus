@@ -24,3 +24,12 @@
 // #define MAILFILE "/tmp/dwm-status.mail"
 // #define PKGFILE "/tmp/dwm-status.packages"
 // #define FBCMDFILE "/tmp/dwm-status.fbcmd"
+
+#define COLO_RESET "\x1b[0m" // reset
+#define COLO_RED "\x1b[38;5;196m" // red
+#define COLO_YELLOW "\x1b[38;5;190m" // yellow
+#define COLO_DEEPGREEN "\x1b[38;5;34m" // deep green
+#define COLO_MAGENTA "\x1b[38;5;199m" // magenta
+#define COLO_BRIGHTGREEN "\x1b[38;5;46m" // bright green
+#define COLO_CYAN "\x1b[38;5;45m" // bright blue
+#define COLO_BLUE "\x1b[38;5;21m" // blue
