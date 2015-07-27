@@ -185,22 +185,11 @@ char * net(void) {
     return result;
 }
 
-double * getAvgs(void) {
-    // you should call free after using this, methinks!
+void getAvgs(double (* avgs)[3]) {
     // is this dumb?
     // you could just read from /proc/loadavg instead...
     // i dunno, the system call is probably just as good...
-    // must return exactly 3 doubles 
-    double * avgs = malloc(3 * sizeof(double));
-    if (avgs == NULL) {
-        exit(15);
-    }
-//     double avgs[3];
-//     double ** a;
-//     a = &avgs;
-//     puts("okay");
-//     int num_avgs = getloadavg((*avgs), 3);
-    int num_avgs = getloadavg(avgs, 3);
+    int num_avgs = getloadavg(*avgs, 3);
     assert (num_avgs == 3);
     if (num_avgs < 3) {
         if (num_avgs == -1) {
@@ -208,25 +197,10 @@ double * getAvgs(void) {
             num_avgs = 0;
         } 
         for (int i = num_avgs; i < 3; i++) {
-//             *avgs[i] = 9.9;
-            avgs[i] = 9.9;
+            (* avgs)[i] = 9.9;
         }
     }
-//     return *avgs;
-    return avgs;
 }
-
-/*
-char * getAvgs(void) {
-    double avgs[3];
-    if (getloadavg(avgs, 3) < 0) {
-        perror("getloadavg broke");
-        // return "oops";
-        exit(EXIT_FAILURE);
-    }
-    return smprintf("%.2f %.2f %.2f", avgs[0], avgs[1], avgs[2]);
-}
-*/
 
 void usage(FILE * stream, int exit_code) {
     // prints what's up to stream, then quits with status exit_code
@@ -315,7 +289,8 @@ void setStatus(Display *dpy) {
 char * buildStatus(void) {
     // you need to call free() after calling this function!
     char * status;
-    double * avgs = getAvgs();
+    static double avgs[3];
+    getAvgs(&avgs);
     char * batt = getBattery();
     char * temper = getTemperature();
     char * netOK = net();
@@ -330,7 +305,6 @@ char * buildStatus(void) {
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(EXIT_FAILURE);
     }
-    free(avgs);
     free(batt);
     free(temper);
     free(netOK);
