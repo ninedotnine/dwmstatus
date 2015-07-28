@@ -172,6 +172,7 @@ void net(char * (* const netOK)) {
         } else {
             success = asprintf(netOK, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
         }
+        close(sockfd);
         if (success == -1) {
             fputs("error, unable to malloc() in asprintf()", stderr);
             exit(14);
@@ -259,12 +260,9 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            daemon(0, 1);
-            fputs("daemoned\n", stderr); // for debugging
-            for (int i = 0; ; sleep(SLEEP_INTERVAL)) {
-                fprintf(stderr, "iteration %d\n", i); // for debugging
+            daemon(0, 0);
+            for (; ; sleep(SLEEP_INTERVAL)) {
                 setStatus(dpy);
-                i++;
             }
         } else {
             setStatus(dpy);
