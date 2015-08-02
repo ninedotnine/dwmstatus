@@ -128,7 +128,7 @@ void getBattery(char * (* const batt)) {
     char * colo;
     if (chargin) {
         colo = COLO_MAGENTA;
-    } else if (capacity > 70) {
+    } else if (capacity > 50) {
         colo = COLO_DEEPGREEN;
     } else if (capacity > 30) {
         colo = COLO_CYAN;
