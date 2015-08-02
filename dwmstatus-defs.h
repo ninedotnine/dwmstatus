@@ -1,18 +1,15 @@
 /* SETTINGS */
 
 // the format for the date/time
-// const char TIMESTRING[] = "[%a %b %d] %H:%M";
 #define TIMESTRING "[%a %b %d] %H:%M"
 // the format for everything
-// const char OUTFORMAT[] "[%.2f %.2f %.2f] [%s] [%s] [%s] [mail %d] [%s] %s"
-// #define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [mail %d] [%s] %s"
 #define OUTFORMAT "[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery
 #define WARN_LOW_BATT 9
 // this is not currently implemented at all...
 #define WARN_LOW_BATT_TEXT "FIXME"
 
-#define SLEEP_INTERVAL 3
+#define SLEEP_INTERVAL 20
 
 // locations of files
 // #define TEMPERATURE   "/sys/class/hwmon/hwmon0/device/temp1_input"
