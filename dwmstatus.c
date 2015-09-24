@@ -149,7 +149,9 @@ void net(char * (* const netOK)) {
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-        if (asprintf(netOK, "error") == -1) {
+        if (asprintf(netOK, "%s%s%s", COLO_RED,
+                                      gai_strerror(error),
+                                      COLO_RESET) == -1) {
             fputs("error, cannot allocate mem\n", stderr);
             exit(12);
         }
@@ -164,7 +166,7 @@ void net(char * (* const netOK)) {
                             info->ai_protocol);
         int success; // check the return value of asprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
-            success = asprintf(netOK, "%sNET%s", COLO_RED, COLO_RESET);
+            success = asprintf(netOK, "%sNET%s", COLO_YELLOW, COLO_RESET);
         } else {
             success = asprintf(netOK, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
         }
