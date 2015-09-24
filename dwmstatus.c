@@ -150,22 +150,18 @@ void net(char * (* const netOK)) {
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
         if (asprintf(netOK, "error") == -1) {
-            fputs("error, what do i even do now? oh no!\n", stderr);
-            if (((*netOK) = malloc(9 * sizeof(char))) == NULL) {
-                exit(12);
-            }
-            snprintf((*netOK), 9, "%s", "soborked");
+            fputs("error, cannot allocate mem\n", stderr);
+            exit(12);
         }
     } else if (info == NULL) {
         if (asprintf(netOK, "could not getaddrinfo") == -1) {
-            fputs("error, what do i even do now? aah!", stderr);
-            if (((*netOK) = malloc(9 * sizeof(char))) == NULL) {
-                exit(13);
-            }
-            snprintf((*netOK), 9, "%s", "soborked");
+            fputs("error, cannot allocate mem\n", stderr);
+            exit(13);
         }
     } else {
-        int sockfd = socket(info->ai_family, info->ai_socktype,info->ai_protocol);
+        int sockfd = socket(info->ai_family,
+                            info->ai_socktype,
+                            info->ai_protocol);
         int success; // check the return value of asprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
             success = asprintf(netOK, "%sNET%s", COLO_RED, COLO_RESET);
