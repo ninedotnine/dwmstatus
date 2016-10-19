@@ -30,10 +30,14 @@
 #include <stdbool.h>
 #include "dwmstatus.h"
 #include <netdb.h>
+#include <errno.h>
+
 
 #include "dwmstatus-defs.h"
 
 const char * program_name;
+
+bool noNetwork = false;
 
 void getdatetime(char * (* const input)) {
     time_t result;
@@ -145,6 +149,13 @@ void getBattery(char * (* const batt)) {
 }
 
 void net(char * (* const netOK)) {
+    if (noNetwork) {
+        int success = asprintf(netOK, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
+        if (success == -1){
+            exit(15);
+        }
+        return;
+    }
     struct addrinfo * info = NULL;
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
@@ -166,6 +177,8 @@ void net(char * (* const netOK)) {
                             info->ai_protocol);
         int success; // check the return value of asprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
+            int errnum = errno;
+            fprintf(stderr, "errno is: %i\n", errnum);
             success = asprintf(netOK, "%sNET%s", COLO_YELLOW, COLO_RESET);
         } else {
             success = asprintf(netOK, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
@@ -203,6 +216,7 @@ void usage(FILE * stream, int exit_code) {
     fputs(" -u --update       update the x root window once\n", stream);
     fputs(" -d --daemon       run in background\n", stream);
     fputs(" -r --report       report status immediately (default)\n", stream);
+    fputs(" -n --no-netctork  skip network check\n", stream);
     exit(exit_code);
 }
 
@@ -210,12 +224,13 @@ int main(int argc, char * argv[]) {
     program_name = argv[0]; // global
 
     /* list available args */
-    const char * const shortOptions = "hdru";
+    const char * const shortOptions = "hdrun";
     const struct option longOptions[] = {
         {"help", 0, NULL, 'h'},
         {"daemon", 0, NULL, 'd'},
         {"report", 0, NULL, 'r'},
         {"update", 0, NULL, 'u'},
+        {"no-network", 0, NULL, 'n'},
     };
 
     /* parse args */
@@ -237,6 +252,9 @@ int main(int argc, char * argv[]) {
                 break;
             case 'u':
                 updateOnce = true;
+                break;
+            case 'n':
+                noNetwork = true;
                 break;
             case '?':
                 usage(stderr, 1);
