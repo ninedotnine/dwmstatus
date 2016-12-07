@@ -43,7 +43,7 @@ void getdatetime(char * (* const input)) {
     time_t result;
     struct tm *resulttm;
 
-    if (((*input) = malloc(65 * sizeof(char))) == NULL) {
+    if (((*input) = calloc(65, sizeof(char))) == NULL) {
         fputs("Cannot allocate memory for buf.\n", stderr);
         exit(10);
     }
@@ -106,7 +106,7 @@ void getBattery(char * (* const batt)) {
         }
 
         char * status;
-        if ((status = malloc(15 * sizeof(char))) == NULL) {
+        if ((status = calloc(15, sizeof(char))) == NULL) {
             exit(11);
         }
         fgets(status, 15, fd);
