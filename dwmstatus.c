@@ -1,6 +1,6 @@
 /* 
  * 9.9
- * dan: compile with: gcc -Wall -pedantic -lX11 -std=c99 dwm-status.c
+ * dan: compile with: gcc -Wall -pedantic -lX11 -lmpdclient -std=c99 dwm-status.c
  * consider replacing getAvgs() with a read from /proc/loadavg
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * colours!!!
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <assert.h>
 #include <X11/Xlib.h>
+#include <mpd/client.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include "dwmstatus.h"
@@ -192,6 +193,70 @@ void net(char * (* const netOK)) {
     freeaddrinfo(info);
 }
 
+void handle_mpc_error(struct mpd_connection *c) {
+    assert(mpd_connection_get_error(c) != MPD_ERROR_SUCCESS);
+    fprintf(stderr, "%s\n", mpd_connection_get_error_message(c));
+    mpd_connection_free(c);
+}
+
+void getNowPlaying(char * (* const string)) {
+    struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+
+    if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
+        handle_mpc_error(conn);
+        return;
+    }
+
+	struct mpd_status * status = mpd_run_status(conn);
+    struct mpd_song *song = mpd_run_current_song(conn);
+
+    if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
+        handle_mpc_error(conn);
+        return;
+    }
+
+    unsigned pos = mpd_song_get_pos(song); 
+    unsigned leng = mpd_status_get_queue_length(status);
+
+    const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+    const char *artist = mpd_song_get_tag(song, MPD_TAG_COMPOSER, 0);
+
+    // if no composer tag, try "artist" tag instead
+    if (artist == NULL) {
+        artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+    }
+
+    int success; 
+    // make title blue, artist magenta 
+    if (title != NULL && artist != NULL) {
+        success = asprintf(string, "%u/%u: %s%s%s - %s%s ♫%s", pos, leng, 
+                           COLO_BLUE, title, COLO_RESET, COLO_MAGENTA, artist, 
+                           COLO_RESET);
+    } else if (artist == NULL) {
+        success = asprintf(string, "%u/%u: %s%s %s♫%s", pos, leng, COLO_BLUE, 
+                           title, COLO_MAGENTA, COLO_RESET);
+    } else {
+        success = asprintf(string, "%u/%u: %s%s %s♫%s", pos, leng, COLO_BLUE, 
+                           artist, COLO_MAGENTA, COLO_RESET);
+    }
+    if (success == -1) {
+        fputs("error, unable to malloc() in asprintf()", stderr);
+        exit(18);
+    }
+
+    mpd_song_free(song);
+    mpd_status_free(status);
+
+    if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS ||
+            !mpd_response_finish(conn)) {
+        handle_mpc_error(conn);
+        return;
+    }
+
+    mpd_connection_free(conn);
+}
+
+
 void getAvgs(double (* avgs)[3]) {
     // is this dumb?
     // you could just read from /proc/loadavg instead...
@@ -305,15 +370,18 @@ char * buildStatus(void) {
     static char * temper;
     static char * netOK;
     static char * time;
+    static char * nowPlaying;
 
     getAvgs(&avgs);
     getBattery(&batt);
     getTemperature(&temper);
     net(&netOK);
     getdatetime(&time);
+    getNowPlaying(&nowPlaying);
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
     if (asprintf(&status, OUTFORMAT,
+                 nowPlaying,
                  avgs[0], avgs[1], avgs[2],
                  batt,
                  temper,
@@ -325,5 +393,6 @@ char * buildStatus(void) {
     free(temper);
     free(netOK);
     free(time);
+    free(nowPlaying);
     return status;
 }
