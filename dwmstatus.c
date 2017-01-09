@@ -212,6 +212,11 @@ void getNowPlaying(char * (* const string)) {
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         handle_mpc_error(conn);
+        *string = calloc(1, 0);
+        return;
+    }
+
+    if (mpd_status_get_state(status) != MPD_STATE_PLAY) {
         return;
     }
 
@@ -224,19 +229,25 @@ void getNowPlaying(char * (* const string)) {
     // if no composer tag, try "artist" tag instead
     if (artist == NULL) {
         artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+
+        // if no artist tag, use filename
+        if (artist == NULL) {
+			artist = mpd_song_get_uri(song);
+        }
     }
 
+// FIXME: improve this gross code
     int success; 
     // make title blue, artist magenta 
     if (title != NULL && artist != NULL) {
-        success = asprintf(string, "%u/%u: %s%s%s - %s%s ♫%s", pos, leng, 
+        success = asprintf(string, "%u/%u: %s%s%s - %s%s ♫%s ", pos, leng,
                            COLO_BLUE, title, COLO_RESET, COLO_MAGENTA, artist, 
                            COLO_RESET);
     } else if (artist == NULL) {
-        success = asprintf(string, "%u/%u: %s%s %s♫%s", pos, leng, COLO_BLUE, 
+        success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
                            title, COLO_MAGENTA, COLO_RESET);
     } else {
-        success = asprintf(string, "%u/%u: %s%s %s♫%s", pos, leng, COLO_BLUE, 
+        success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
                            artist, COLO_MAGENTA, COLO_RESET);
     }
     if (success == -1) {
