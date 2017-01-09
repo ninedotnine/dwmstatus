@@ -217,6 +217,7 @@ void getNowPlaying(char * (* const string)) {
     }
 
     if (mpd_status_get_state(status) != MPD_STATE_PLAY) {
+        *string = calloc(1, 0);
         return;
     }
 
