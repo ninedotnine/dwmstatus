@@ -204,6 +204,7 @@ void getNowPlaying(char * (* const string)) {
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         handle_mpc_error(conn);
+        *string = calloc(1, 0);
         return;
     }
 
