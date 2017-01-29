@@ -352,8 +352,7 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            daemon(0, 0);
-            for (; ; sleep(SLEEP_INTERVAL)) {
+            for (daemon(0, 0); true; sleep(SLEEP_INTERVAL)) {
                 setStatus(dpy);
             }
         } else {
