@@ -9,7 +9,8 @@
 // this is not currently implemented at all...
 #define WARN_LOW_BATT_TEXT "FIXME"
 
-#define SLEEP_INTERVAL 20
+// 10 seconds between iterations
+#define SLEEP_INTERVAL 10
 
 // locations of files
 // #define TEMPERATURE   "/sys/class/hwmon/hwmon0/device/temp1_input"
