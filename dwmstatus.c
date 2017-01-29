@@ -17,7 +17,7 @@
 #define zenity
 
 // NDEBUG turns off all assert() calls
-#define NDEBUG
+// #define NDEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -211,6 +211,7 @@ void getNowPlaying(char * (* const string)) {
 	struct mpd_status * status = mpd_run_status(conn);
     struct mpd_song *song = mpd_run_current_song(conn);
 
+
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         handle_mpc_error(conn);
         *string = calloc(1, 0);
@@ -222,7 +223,7 @@ void getNowPlaying(char * (* const string)) {
         return;
     }
 
-    unsigned pos = mpd_song_get_pos(song); 
+    unsigned pos = mpd_song_get_pos(song) + 1; // queue is 0-indexed
     unsigned leng = mpd_status_get_queue_length(status);
 
     const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
@@ -232,25 +233,22 @@ void getNowPlaying(char * (* const string)) {
     if (artist == NULL) {
         artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
 
-        // if no artist tag, use filename
+        // if no artist tag, use filename. this should never return null
         if (artist == NULL) {
 			artist = mpd_song_get_uri(song);
         }
     }
+    assert(artist != NULL);
 
-// FIXME: improve this gross code
     int success; 
-    // make title blue, artist magenta 
-    if (title != NULL && artist != NULL) {
+    if (title == NULL) {
+        success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
+                           artist, COLO_MAGENTA, COLO_RESET);
+    } else {
+        // make title blue, artist magenta
         success = asprintf(string, "%u/%u: %s%s%s - %s%s ♫%s ", pos, leng,
                            COLO_BLUE, title, COLO_RESET, COLO_MAGENTA, artist, 
                            COLO_RESET);
-    } else if (artist == NULL) {
-        success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
-                           title, COLO_MAGENTA, COLO_RESET);
-    } else {
-        success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
-                           artist, COLO_MAGENTA, COLO_RESET);
     }
     if (success == -1) {
         fputs("error, unable to malloc() in asprintf()", stderr);
