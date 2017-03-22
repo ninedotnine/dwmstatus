@@ -33,7 +33,6 @@
 #include <netdb.h>
 #include <errno.h>
 
-
 #include "dwmstatus-defs.h"
 
 const char * program_name;
@@ -152,7 +151,7 @@ void getBattery(char * (* const batt)) {
 void net(char * (* const netOK)) {
     if (noNetwork) {
         int success = asprintf(netOK, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
-        if (success == -1){
+        if (success == -1) {
             exit(15);
         }
         return;
@@ -193,9 +192,9 @@ void net(char * (* const netOK)) {
     freeaddrinfo(info);
 }
 
-void handle_mpc_error(struct mpd_connection *c) {
+void handle_mpd_error(struct mpd_connection *c) {
     assert(mpd_connection_get_error(c) != MPD_ERROR_SUCCESS);
-    fprintf(stderr, "%s\n", mpd_connection_get_error_message(c));
+    fprintf(stderr, "mpd: %s\n", mpd_connection_get_error_message(c));
     mpd_connection_free(c);
 }
 
@@ -203,7 +202,8 @@ void getNowPlaying(char * (* const string)) {
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
-        handle_mpc_error(conn);
+        fprintf(stderr, "handling error 1\n");
+        handle_mpd_error(conn);
         *string = calloc(1, 0);
         return;
     }
@@ -211,15 +211,16 @@ void getNowPlaying(char * (* const string)) {
 	struct mpd_status * status = mpd_run_status(conn);
     struct mpd_song *song = mpd_run_current_song(conn);
 
-
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
-        handle_mpc_error(conn);
+        fprintf(stderr, "handling error 2\n");
+        handle_mpd_error(conn);
         *string = calloc(1, 0);
         return;
     }
 
     if (mpd_status_get_state(status) != MPD_STATE_PLAY) {
         *string = calloc(1, 0);
+        mpd_connection_free(conn);
         return;
     }
 
@@ -251,6 +252,7 @@ void getNowPlaying(char * (* const string)) {
                            COLO_RESET);
     }
     if (success == -1) {
+        fprintf(stderr, "handling error 4\n");
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(18);
     }
@@ -260,7 +262,8 @@ void getNowPlaying(char * (* const string)) {
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS ||
             !mpd_response_finish(conn)) {
-        handle_mpc_error(conn);
+        fprintf(stderr, "handling error 5\n");
+        handle_mpd_error(conn);
         return;
     }
 
@@ -352,7 +355,7 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            for (daemon(0, 0); true; sleep(SLEEP_INTERVAL)) {
+            for (daemon(0, 1); true; sleep(SLEEP_INTERVAL)) {
                 setStatus(dpy);
             }
         } else {
