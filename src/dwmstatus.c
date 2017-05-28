@@ -1,6 +1,5 @@
 /* 
  * 9.9
- * dan: compile with: gcc -Wall -pedantic -lX11 -lmpdclient -std=c99 dwm-status.c
  * consider replacing getAvgs() with a read from /proc/loadavg
  * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * colours!!!
