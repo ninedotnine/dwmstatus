@@ -181,7 +181,7 @@ void net(char * (* const netOK)) {
             fprintf(stderr, "errno is: %i\n", errnum);
             success = asprintf(netOK, "%sNET%s", COLO_YELLOW, COLO_RESET);
         } else {
-            success = asprintf(netOK, "%sOK%s", COLO_DEEPGREEN, COLO_RESET);
+            success = asprintf(netOK, "%s5x5%s", COLO_DEEPGREEN, COLO_RESET);
         }
         close(sockfd);
         if (success == -1) {
