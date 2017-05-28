@@ -32,12 +32,26 @@
 #include "dwmstatus.h"
 #include <netdb.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include "dwmstatus-defs.h"
 
 const char * program_name;
 
 bool noNetwork = false;
+
+static Display *dpy;
+
+void * mpd_idler(__attribute__((unused)) void * arg) {
+    pthread_detach(pthread_self());
+
+    struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+
+    while (true) {
+        mpd_run_idle(conn);
+        setStatus();
+    }
+}
 
 void getdatetime(char * (* const input)) {
     time_t result;
@@ -346,8 +360,6 @@ int main(int argc, char * argv[]) {
         }
     } while (nextOption != -1);
 
-    static Display *dpy;
-
     if (daemonMode || updateOnce) {
         if (!(dpy = XOpenDisplay(NULL))) {
             fputs("Cannot open display. are you _sure_ X11 is running?\n",
@@ -355,11 +367,17 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            for (daemon(0, 1); true; sleep(SLEEP_INTERVAL)) {
-                setStatus(dpy);
+            daemon(0, 1);
+
+            pthread_t idler;
+            pthread_create(&idler, NULL, mpd_idler, NULL);
+
+            while (true) {
+                setStatus();
+                sleep(SLEEP_INTERVAL);
             }
         } else {
-            setStatus(dpy);
+            setStatus();
         }
     } else {
         puts(buildStatus());
@@ -367,7 +385,7 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-void setStatus(Display *dpy) {
+void setStatus(void) {
     char * status = buildStatus();
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status);
