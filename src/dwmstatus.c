@@ -1,7 +1,6 @@
 /* 
  * 9.9
  * consider replacing getAvgs() with a read from /proc/loadavg
- * make WARN_LOW_BATT_TEXT do something, the ""s make it tricky
  * colours!!!
  */
 
@@ -142,8 +141,8 @@ void getBattery(char * (* const batt)) {
             // display a warning on low battery and not plugged in. 
             // depends on zenity
             if (! fork()) { 
-                char * const args[] = {"zenity", "--warning", 
-                    "--text=you're a fat slut", NULL}; 
+                char * const args[] = {"zenity", "--warning", "--width=600",
+                    "--text=" WARN_LOW_BATT_TEXT, NULL};
                 execv("/usr/bin/zenity", args);
             }
 #endif
