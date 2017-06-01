@@ -383,7 +383,9 @@ int main(int argc, char * argv[]) {
             setStatus();
         }
     } else {
-        puts(buildStatus());
+        char * status = buildStatus();
+        puts(status);
+        free(status);
     }
     return 0;
 }
