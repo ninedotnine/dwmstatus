@@ -228,11 +228,15 @@ void getNowPlaying(char * (* const string)) {
         fprintf(stderr, "handling error 2\n");
         handle_mpd_error(conn);
         *string = calloc(1, 0);
+        mpd_song_free(song);
+        mpd_status_free(status);
         return;
     }
 
     if (mpd_status_get_state(status) != MPD_STATE_PLAY) {
         *string = calloc(1, 0);
+        mpd_song_free(song);
+        mpd_status_free(status);
         mpd_connection_free(conn);
         return;
     }
