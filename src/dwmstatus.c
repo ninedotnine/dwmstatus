@@ -35,19 +35,28 @@
 
 #include "dwmstatus-defs.h"
 
+/* global variables */
 const char * program_name;
 
 bool noNetwork = false;
 
 static Display *dpy;
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 void * mpd_idler(__attribute__((unused)) void * arg) {
     pthread_detach(pthread_self());
 
+    pthread_mutex_lock(&mutex);
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+    pthread_mutex_unlock(&mutex);
+
+    int count = 0;
 
     while (true) {
         mpd_run_idle(conn);
+        fprintf(stderr, "received mpd event no %i\n", count);
+        count++;
         setStatus();
     }
 }
@@ -213,6 +222,7 @@ void handle_mpd_error(struct mpd_connection *c) {
 
 void getNowPlaying(char * (* const string)) {
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 1\n");
@@ -391,11 +401,13 @@ int main(int argc, char * argv[]) {
 }
 
 void setStatus(void) {
+    pthread_mutex_lock(&mutex);
     char * status = buildStatus();
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status);
     XSync(dpy, False);
     free(status);
+    pthread_mutex_unlock(&mutex);
 }
 
 char * buildStatus(void) {
