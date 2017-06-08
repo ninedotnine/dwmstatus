@@ -348,6 +348,7 @@ int main(int argc, char * argv[]) {
         switch (nextOption) {
             case 'h':
                 usage(stdout, 0);
+                break;
             case 'd':
                 daemonMode = true;
                 break;
