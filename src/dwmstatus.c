@@ -351,6 +351,7 @@ int main(int argc, char * argv[]) {
         {"report", 0, NULL, 'r'},
         {"update", 0, NULL, 'u'},
         {"no-network", 0, NULL, 'n'},
+        {0, 0, 0, 0}, // this is necessary, apparently
     };
 
     /* parse args */
