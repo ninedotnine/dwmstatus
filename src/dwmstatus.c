@@ -235,13 +235,13 @@ void handle_mpd_error(struct mpd_connection *c) {
 }
 
 void getNowPlaying(char * (* const string)) {
+    // this function sets the input to NULL if mpd connection fails
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
-
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 1\n");
         handle_mpd_error(conn);
-        *string = calloc(1, 0);
+        *string = NULL;
         return;
     }
 
@@ -251,14 +251,14 @@ void getNowPlaying(char * (* const string)) {
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 2\n");
         handle_mpd_error(conn);
-        *string = calloc(1, 0);
+        *string = NULL;
         mpd_song_free(song);
         mpd_status_free(status);
         return;
     }
 
     if (mpd_status_get_state(status) != MPD_STATE_PLAY) {
-        *string = calloc(1, 0);
+        *string = NULL;
         mpd_song_free(song);
         mpd_status_free(status);
         mpd_connection_free(conn);
@@ -442,11 +442,11 @@ char * buildStatus(void) {
     getTemperature(&temper);
     net(&netOK);
     getdatetime(&time);
-    getNowPlaying(&nowPlaying);
+    getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that 
     if (asprintf(&status, OUTFORMAT,
-                 nowPlaying,
+                 (nowPlaying ? nowPlaying : ""),
                  avgs[0], avgs[1], avgs[2],
                  batt,
                  temper,
@@ -458,6 +458,6 @@ char * buildStatus(void) {
     free(temper);
     free(netOK);
     free(time);
-    free(nowPlaying);
+    free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;
 }
