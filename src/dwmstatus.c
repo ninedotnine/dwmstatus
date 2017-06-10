@@ -69,7 +69,6 @@ void * mpd_idler(__attribute__((unused)) void * arg) {
 
     while (true) {
         mpd_run_idle(conn);
-        fprintf(stderr, "received mpd event no %i\n", count);
         count++;
         setStatus();
     }
