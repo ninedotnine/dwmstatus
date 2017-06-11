@@ -30,4 +30,4 @@
 #define COLO_MAGENTA "\x1b[38;5;199m" // magenta
 #define COLO_BRIGHTGREEN "\x1b[38;5;46m" // bright green
 #define COLO_CYAN "\x1b[38;5;45m" // bright blue
-#define COLO_BLUE "\x1b[38;5;21m" // blue
+#define COLO_BLUE "\x1b[38;5;32m" // blue
