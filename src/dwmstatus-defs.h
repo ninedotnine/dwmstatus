@@ -13,15 +13,9 @@
 #define SLEEP_INTERVAL 10
 
 // locations of files
-// #define TEMPERATURE   "/sys/class/hwmon/hwmon0/device/temp1_input"
 #define TEMPERATURE   "/sys/class/thermal/thermal_zone0/temp"
 #define BATT_CAPACITY "/sys/class/power_supply/BAT0/capacity"
 #define BATT_STATUS   "/sys/class/power_supply/BAT0/status"
-
-// files -- populated by cron
-// #define MAILFILE "/tmp/dwm-status.mail"
-// #define PKGFILE "/tmp/dwm-status.packages"
-// #define FBCMDFILE "/tmp/dwm-status.fbcmd"
 
 #define COLO_RESET "\x1b[0m" // reset
 #define COLO_RED "\x1b[38;5;196m" // red
