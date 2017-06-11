@@ -10,7 +10,7 @@
 #define WARN_LOW_BATT_TEXT "you know if there's one thing i really respect, \nit's plus-size models who challenge the idea of what makes a woman beautiful"
 
 // 10 seconds between iterations
-#define SLEEP_INTERVAL 10
+#define SLEEP_INTERVAL 20
 
 // locations of files
 #define TEMPERATURE   "/sys/class/thermal/thermal_zone0/temp"
