@@ -17,10 +17,10 @@
 #define BATT_CAPACITY "/sys/class/power_supply/BAT0/capacity"
 #define BATT_STATUS   "/sys/class/power_supply/BAT0/status"
 
-#define COLO_RESET "" // reset
-#define COLO_RED "" // red
-#define COLO_YELLOW "" // yellow
-#define COLO_DEEPGREEN "" // deep green
-#define COLO_MAGENTA "" // magenta
-#define COLO_CYAN "" // bright blue
-#define COLO_BLUE "" // blue
+#define COLO_RESET "\x1b[0m" // reset
+#define COLO_RED "\x1b[38;5;196m" // red
+#define COLO_YELLOW "\x1b[38;5;190m" // yellow
+#define COLO_DEEPGREEN "\x1b[38;5;34m" // deep green
+#define COLO_MAGENTA "\x1b[38;5;199m" // magenta
+#define COLO_CYAN "\x1b[38;5;45m" // bright blue
+#define COLO_BLUE "\x1b[38;5;32m" // blue
