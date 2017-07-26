@@ -6,7 +6,7 @@
 #define OUTFORMAT "%s[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery
 #define WARN_LOW_BATT 9
-// this is not currently implemented at all...
+// what the battery warning says
 #define WARN_LOW_BATT_TEXT "you know if there's one thing i really respect, \nit's plus-size models who challenge the idea of what makes a woman beautiful"
 
 // 10 seconds between iterations
