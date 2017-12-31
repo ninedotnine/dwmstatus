@@ -245,20 +245,22 @@ void getNowPlaying(char * (* const string)) {
     }
 
 	struct mpd_status * status = mpd_run_status(conn);
-    struct mpd_song *song = mpd_run_current_song(conn);
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 2\n");
         handle_mpd_error(conn);
         *string = NULL;
-        mpd_song_free(song);
         mpd_status_free(status);
         return;
     }
 
-    if (mpd_status_get_state(status) != MPD_STATE_PLAY) {
+    struct mpd_song *song = mpd_run_current_song(conn);
+
+    if (song == NULL || mpd_status_get_state(status) != MPD_STATE_PLAY) {
         *string = NULL;
-        mpd_song_free(song);
+        if (song != NULL) {
+            mpd_song_free(song);
+        }
         mpd_status_free(status);
         mpd_connection_free(conn);
         return;
