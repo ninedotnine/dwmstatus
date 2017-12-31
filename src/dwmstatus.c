@@ -1,4 +1,4 @@
-/* 
+/*
  * 9.9
  * consider replacing getAvgs() with a read from /proc/loadavg
  * colours!!!
@@ -27,11 +27,11 @@
 #include <mpd/client.h>
 #include <getopt.h>
 #include <stdbool.h>
-#include "dwmstatus.h"
 #include <netdb.h>
 #include <errno.h>
 #include <pthread.h>
 
+#include "dwmstatus.h"
 #include "dwmstatus-defs.h"
 
 /* global variables */
@@ -95,7 +95,7 @@ void getdatetime(char * (* const input)) {
 }
 
 int getfiledata(const char *filename) {
-    // this function parses an int from filename 
+    // this function parses an int from filename
     FILE *fd;
     int result;
     fd = fopen(filename, "r");
@@ -152,9 +152,9 @@ void getBattery(char * (* const batt)) {
         if (! chargin && capacity <= WARN_LOW_BATT) {
             fputs("low battery warning\n", stderr);
 #ifdef zenity
-            // display a warning on low battery and not plugged in. 
+            // display a warning on low battery and not plugged in.
             // depends on zenity
-            if (! fork()) { 
+            if (! fork()) {
                 char * const args[] = {"zenity", "--warning", "--width=600",
                     "--text=" WARN_LOW_BATT_TEXT, NULL};
                 execv("/usr/bin/zenity", args);
@@ -281,14 +281,14 @@ void getNowPlaying(char * (* const string)) {
     }
     assert(artist != NULL);
 
-    int success; 
+    int success;
     if (title == NULL) {
         success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
                            artist, COLO_MAGENTA, COLO_RESET);
     } else {
         // make title blue, artist magenta
         success = asprintf(string, "%u/%u: %s%s%s - %s%s ♫%s ", pos, leng,
-                           COLO_BLUE, title, COLO_RESET, COLO_MAGENTA, artist, 
+                           COLO_BLUE, title, COLO_RESET, COLO_MAGENTA, artist,
                            COLO_RESET);
     }
     if (success == -1) {
@@ -321,7 +321,7 @@ void getAvgs(double (* avgs)[3]) {
         if (num_avgs == -1) {
             fputs("num_avgs is -1\n", stderr);
             num_avgs = 0;
-        } 
+        }
         for (int i = num_avgs; i < 3; i++) {
             (* avgs)[i] = 9.9;
         }
@@ -379,10 +379,10 @@ int main(int argc, char * argv[]) {
                 break;
             case '?':
                 usage(stderr, 1);
-            case (-1): 
+            case (-1):
                 break;
             default:
-                // when does this happen? 
+                // when does this happen?
                 printf("what? exiting\n");
                 exit(EXIT_FAILURE);
         }
@@ -444,7 +444,7 @@ char * buildStatus(void) {
     getdatetime(&time);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
     // thank you, _GNU_SOURCE, for asprintf
-    // asprintf returns -1 on error, we check for that 
+    // asprintf returns -1 on error, we check for that
     if (asprintf(&status, OUTFORMAT,
                  (nowPlaying ? nowPlaying : ""),
                  avgs[0], avgs[1], avgs[2],
