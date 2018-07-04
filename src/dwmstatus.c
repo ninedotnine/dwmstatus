@@ -378,6 +378,7 @@ int main(int argc, char * argv[]) {
                 break;
             case '?':
                 usage(stderr, 1);
+                break;
             case (-1):
                 break;
             default:
