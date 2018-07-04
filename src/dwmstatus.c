@@ -65,11 +65,8 @@ void * mpd_idler(__attribute__((unused)) void * arg) {
     success = pthread_mutex_unlock(&mutex);
     assert (success == 0);
 
-    int count = 0;
-
     while (true) {
         mpd_run_idle(conn);
-        count++;
         setStatus();
     }
 }
