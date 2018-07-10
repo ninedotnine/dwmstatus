@@ -309,7 +309,6 @@ void getNowPlaying(char * (* const string)) {
     mpd_connection_free(conn);
 }
 
-
 void getAvgs(double (* avgs)[3]) {
     // is this dumb?
     // you could just read from /proc/loadavg instead...

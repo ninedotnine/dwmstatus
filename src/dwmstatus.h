@@ -4,7 +4,7 @@ void getTemperature(char * (* const result));
 void getBattery(char * (* const batt));
 void net(char * (* const netOK));
 void handle_mpd_error(struct mpd_connection *c);
-void getAvgs(double (* avgs2)[3]);
+void getAvgs(double (* avgs)[3]);
 void usage(FILE * stream, int exit_code);
 void setStatus(void);
 char * buildStatus(void);
