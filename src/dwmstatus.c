@@ -333,7 +333,7 @@ void usage(FILE * stream, int exit_code) {
     fputs(" -u --update       update the x root window once\n", stream);
     fputs(" -d --daemon       run in background\n", stream);
     fputs(" -r --report       report status immediately (default)\n", stream);
-    fputs(" -n --no-netctork  skip network check\n", stream);
+    fputs(" -n --no-network   skip network check\n", stream);
     exit(exit_code);
 }
 
