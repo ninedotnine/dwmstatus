@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <locale.h>
 #include <string.h>
 #include <assert.h>
 #include <X11/Xlib.h>
@@ -339,6 +340,8 @@ void usage(FILE * stream, int exit_code) {
 
 int main(int argc, char * argv[]) {
     program_name = argv[0]; // global
+
+    setlocale(LC_ALL, "");
 
     /* list available args */
     const char * const shortOptions = "hdrun";
