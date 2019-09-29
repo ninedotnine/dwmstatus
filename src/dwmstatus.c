@@ -74,6 +74,7 @@ void * mpd_idler(__attribute__((unused)) void * arg) {
     while (true) {
         success = mpd_run_idle(conn);
         if (success == 0) {
+            fputs("error, mpd_run_idle broke. was mpd killed? ", stderr);
             mpd_connection_free(conn);
             conn = establish_mpd_conn();
         }
@@ -411,7 +412,7 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            daemon(0, 0);
+            daemon(0, 1);
 
             pthread_t idler;
             pthread_create(&idler, NULL, mpd_idler, NULL);
