@@ -120,7 +120,7 @@ int getfiledata(const char *filename) {
 }
 
 void getTemperature(char * (* const result)) {
-    float temper = (float) getfiledata(TEMPERATURE) / 1000.0;
+    double temper = getfiledata(TEMPERATURE) / 1000.0;
     char * colo;
     if (temper > 85) {
         colo = COLO_RED;

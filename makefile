@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -Wextra -g -pedantic
+CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wconversion -Wcast-align=strict
 FILES = src/dwmstatus.c
 OUT_EXE = bin/dwmstatus
 LIBS = -lpthread -lmpdclient -lX11
