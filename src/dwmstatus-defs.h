@@ -1,4 +1,5 @@
 /* SETTINGS */
+#define VERSION "0.5.1"
 
 // the format for the date/time
 #define TIMESTRING "%a %d %b  %H:%M"
@@ -7,7 +8,7 @@
 // level to warn on low battery
 #define WARN_LOW_BATT 9
 // what the battery warning says
-#define WARN_LOW_BATT_TEXT "you know if there's one thing i really respect, \nit's plus-size models who challenge the idea of what makes a woman beautiful"
+#define WARN_LOW_BATT_TEXT "coliss"
 
 // 10 seconds between iterations
 #define SLEEP_INTERVAL 20

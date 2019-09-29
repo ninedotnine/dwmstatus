@@ -344,6 +344,7 @@ void usage(FILE * stream, int exit_code) {
     fputs(" -d --daemon       run in background\n", stream);
     fputs(" -r --report       report status immediately (default)\n", stream);
     fputs(" -n --no-network   skip network check\n", stream);
+    fputs(" -v --version      output version and exit\n", stream);
     exit(exit_code);
 }
 
@@ -353,13 +354,14 @@ int main(int argc, char * argv[]) {
     setlocale(LC_ALL, "");
 
     /* list available args */
-    const char * const shortOptions = "hdrun";
+    const char * const shortOptions = "hdrunv";
     const struct option longOptions[] = {
         {"help", 0, NULL, 'h'},
         {"daemon", 0, NULL, 'd'},
         {"report", 0, NULL, 'r'},
         {"update", 0, NULL, 'u'},
         {"no-network", 0, NULL, 'n'},
+        {"version", 0, NULL, 'v'},
         {0, 0, 0, 0}, // this is necessary, apparently
     };
 
@@ -387,6 +389,9 @@ int main(int argc, char * argv[]) {
             case 'n':
                 noNetwork = true;
                 break;
+            case 'v':
+                printf("dan's dwmstatus version: %s\n", VERSION);
+                exit(EXIT_SUCCESS);
             case '?':
                 usage(stderr, 1);
                 break;
