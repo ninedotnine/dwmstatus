@@ -44,11 +44,8 @@ static Display *dpy;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void * mpd_idler(__attribute__((unused)) void * arg) {
-    int success = pthread_detach(pthread_self());
-    assert (success == 0);
-
-    success = pthread_mutex_lock(&mutex);
+struct mpd_connection * establish_mpd_conn(void) {
+    int success = pthread_mutex_lock(&mutex);
     assert (success == 0);
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
 
@@ -66,8 +63,20 @@ void * mpd_idler(__attribute__((unused)) void * arg) {
     success = pthread_mutex_unlock(&mutex);
     assert (success == 0);
 
+    return conn;
+}
+
+void * mpd_idler(__attribute__((unused)) void * arg) {
+    int success = pthread_detach(pthread_self());
+    assert (success == 0);
+
+    struct mpd_connection * conn = establish_mpd_conn();
     while (true) {
-        mpd_run_idle(conn);
+        success = mpd_run_idle(conn);
+        if (success == 0) {
+            mpd_connection_free(conn);
+            conn = establish_mpd_conn();
+        }
         setStatus();
     }
 }
