@@ -406,7 +406,7 @@ int main(int argc, char * argv[]) {
             return EXIT_FAILURE;
         }
         if (daemonMode) {
-            daemon(0, 1);
+            daemon(0, 0);
 
             pthread_t idler;
             pthread_create(&idler, NULL, mpd_idler, NULL);
