@@ -36,13 +36,10 @@
 #include "dwmstatus-defs.h"
 
 /* global variables */
-const char * program_name;
-
-bool noNetwork = false;
-
+static const char * program_name;
+static bool noNetwork = false;
 static Display *dpy;
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct mpd_connection * establish_mpd_conn(void) {
     int success = pthread_mutex_lock(&mutex);
