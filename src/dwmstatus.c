@@ -4,12 +4,6 @@
  * colours!!!
  */
 
-// this makes gcc not complain about implicit declarations of popen and pclose
-// when using -pedantic and -std=c99. i guess that's good?
-// also provides getloadavg and asprintf
-// see: man 7 feature_test_macros
-#define _GNU_SOURCE
-
 // ideally this would only be defined if i knew zenity was installed
 // but fuck that, right???? who even needs makefiles
 #define zenity
