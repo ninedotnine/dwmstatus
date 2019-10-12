@@ -72,8 +72,8 @@ void * mpd_idler(__attribute__((unused)) void * arg) {
 
     struct mpd_connection * conn = establish_mpd_conn();
     while (true) {
-        success = mpd_run_idle(conn);
-        if (success == 0) {
+        enum mpd_idle event = mpd_run_idle(conn);
+        if (event == 0) {
             fputs("error, mpd_run_idle broke. was mpd killed? ", stderr);
             mpd_connection_free(conn);
             conn = establish_mpd_conn();
