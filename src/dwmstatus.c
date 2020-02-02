@@ -266,7 +266,7 @@ int main(int argc, char * argv[]) {
         exit(16);
     }
     if (! noNetwork) {
-        if (updateOnce) {
+        if (updateOnce || reportMode) {
             net();
         }
         if (daemonMode) {
