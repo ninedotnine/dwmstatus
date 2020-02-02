@@ -221,6 +221,7 @@ int main(int argc, char * argv[]) {
                 break;
             case 'd':
                 daemonMode = true;
+                updateOnce = false;
                 break;
             case 'r':
                 daemonMode = false;
@@ -228,6 +229,7 @@ int main(int argc, char * argv[]) {
                 break;
             case 'u':
                 updateOnce = true;
+                daemonMode = false;
                 break;
             case 'n':
                 noNetwork = true;
