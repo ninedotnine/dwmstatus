@@ -209,9 +209,9 @@ int main(int argc, char * argv[]) {
 
     /* parse args */
     int nextOption;
-    bool daemonMode = false;
-    bool updateOnce = false;
-    bool reportMode = false;
+    bool daemon_mode = false;
+    bool update_mode = false;
+    bool report_mode = false;
     bool noNetwork = false;
 
     do {
@@ -221,16 +221,16 @@ int main(int argc, char * argv[]) {
                 usage(stdout, 0);
                 break;
             case 'd':
-                daemonMode = true;
-                updateOnce = false;
+                daemon_mode = true;
+                update_mode = false;
                 break;
             case 'r':
-                daemonMode = false;
-                reportMode = true;
+                daemon_mode = false;
+                report_mode = true;
                 break;
             case 'u':
-                updateOnce = true;
-                daemonMode = false;
+                update_mode = true;
+                daemon_mode = false;
                 break;
             case 'n':
                 noNetwork = true;
@@ -250,8 +250,8 @@ int main(int argc, char * argv[]) {
         }
     } while (nextOption != -1);
 
-    if (! (updateOnce || daemonMode || reportMode)) {
-        reportMode = true; // a sensible default
+    if (! (update_mode || daemon_mode || report_mode)) {
+        report_mode = true; // a sensible default
     }
 
     // initialize the net_buf to a dummy string for now.
@@ -266,16 +266,16 @@ int main(int argc, char * argv[]) {
     }
 
     if (! noNetwork) {
-        if (updateOnce || reportMode) {
+        if (update_mode || report_mode) {
             net();
         }
-        if (daemonMode) {
+        if (daemon_mode) {
             pthread_t network_worker;
             pthread_create(&network_worker, NULL, network_updater, NULL);
         }
     }
 
-    if (daemonMode || updateOnce) {
+    if (daemon_mode || update_mode) {
         if (!(dpy = XOpenDisplay(NULL))) {
             fputs("Cannot open display. are you _sure_ X11 is running?\n",
                     stderr);
@@ -283,7 +283,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (daemonMode) {
+    if (daemon_mode) {
         daemon(0, 1);
 
         pthread_t idler;
@@ -295,12 +295,12 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (updateOnce || reportMode) {
+    if (update_mode || report_mode) {
         char * status = buildStatus();
-        if (updateOnce) {
+        if (update_mode) {
             set_status_to(status);
         }
-        if (reportMode) {
+        if (report_mode) {
             puts(status);
         }
         free(status);
