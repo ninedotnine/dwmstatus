@@ -35,6 +35,11 @@ static const char * program_name;
 static bool noNetwork = false;
 static Display *dpy;
 
+
+#define MAX_NET_MSG_LEN 99
+static char netOK[MAX_NET_MSG_LEN];
+
+
 void * mpd_idler(__attribute__((unused)) void * arg) {
     int success = pthread_detach(pthread_self());
     assert (success == 0);
@@ -160,10 +165,13 @@ void getBattery(char * (* const batt)) {
     }
 }
 
-void net(char * (* const netOK)) {
+void net(void) {
     if (noNetwork) {
-        int success = asprintf(netOK, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
-        if (success == -1) {
+        int success = snprintf(netOK, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
+        if (success > MAX_NET_MSG_LEN) {
+            fputs("net output truncated\n", stderr);
+        } else if (success < 1) {
+            fputs("error, problem with snprintf\n", stderr);
             exit(15);
         }
         return;
@@ -172,31 +180,39 @@ void net(char * (* const netOK)) {
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-        if (asprintf(netOK, "%s", COLO_RED "NET" COLO_RESET) == -1) {
-            fputs("error, cannot allocate mem\n", stderr);
+        int success = snprintf(netOK, MAX_NET_MSG_LEN, "%s", COLO_RED "NET" COLO_RESET);
+        if (success > MAX_NET_MSG_LEN) {
+            fputs("net output truncated\n", stderr);
+        } else if (success < 1) {
+            fputs("error, problem with snprintf\n", stderr);
             exit(12);
         }
     } else if (info == NULL) {
         fprintf(stderr, "net error: error is 0 but info is null\n");
-        if (asprintf(netOK, "%s", COLO_RED "NET" COLO_RESET) == -1) {
-            fputs("error, cannot allocate mem\n", stderr);
+        int success = snprintf(netOK, MAX_NET_MSG_LEN, "%s", COLO_RED "NET" COLO_RESET);
+        if (success > MAX_NET_MSG_LEN) {
+            fputs("net output truncated\n", stderr);
+        } else if (success < 1) {
+            fputs("error, problem with snprintf\n", stderr);
             exit(13);
         }
     } else {
         int sockfd = socket(info->ai_family,
                             info->ai_socktype,
                             info->ai_protocol);
-        int success; // check the return value of asprintf
+        int success; // check the return value of snprintf
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
             int errnum = errno;
             fprintf(stderr, "errno is: %i\n", errnum);
-            success = asprintf(netOK, "%sNET%s", COLO_YELLOW, COLO_RESET);
+            success = snprintf(netOK, MAX_NET_MSG_LEN, "%sNET%s", COLO_YELLOW, COLO_RESET);
         } else {
-            success = asprintf(netOK, "%s5x5%s", COLO_DEEPGREEN, COLO_RESET);
+            success = snprintf(netOK, MAX_NET_MSG_LEN, "%s5x5%s", COLO_DEEPGREEN, COLO_RESET);
         }
         close(sockfd);
-        if (success == -1) {
-            fputs("error, unable to malloc() in asprintf()", stderr);
+        if (success > MAX_NET_MSG_LEN) {
+            fputs("net output truncated\n", stderr);
+        } else if (success < 1) {
+            fputs("error, problem with snprintf\n", stderr);
             exit(14);
         }
     }
@@ -333,14 +349,13 @@ char * buildStatus(void) {
     static double avgs[3];
     static char * batt;
     static char * temper;
-    static char * netOK;
     static char * time;
     static char * nowPlaying;
 
     getAvgs(&avgs);
     getBattery(&batt);
     getTemperature(&temper);
-    net(&netOK);
+    net();
     getdatetime(&time);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
     // thank you, _GNU_SOURCE, for asprintf
@@ -356,7 +371,6 @@ char * buildStatus(void) {
     }
     free(batt);
     free(temper);
-    free(netOK);
     free(time);
     free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;
