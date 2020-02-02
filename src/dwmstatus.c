@@ -226,7 +226,6 @@ int main(int argc, char * argv[]) {
                 break;
             case 'r':
                 daemonMode = false;
-                updateOnce = false;
                 reportMode = true;
                 break;
             case 'u':
@@ -252,7 +251,7 @@ int main(int argc, char * argv[]) {
     } while (nextOption != -1);
 
     if (! (updateOnce || daemonMode || reportMode)) {
-        reportMode = true;
+        reportMode = true; // a sensible default
     }
 
     // initialize the net_buf to a dummy string for now.
@@ -296,17 +295,29 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (updateOnce) {
-        setStatus();
-    }
-
-    if (reportMode) {
+    if (updateOnce || reportMode) {
         char * status = buildStatus();
-        puts(status);
+        if (updateOnce) {
+            set_status_to(status);
+        }
+        if (reportMode) {
+            puts(status);
+        }
         free(status);
     }
     return 0;
 }
+
+void set_status_to(const char * string) {
+    int success = pthread_mutex_lock(&music_mutex);
+    assert (success == 0);
+    assert (dpy != NULL);
+    XStoreName(dpy, DefaultRootWindow(dpy), string);
+    XSync(dpy, False);
+    success = pthread_mutex_unlock(&music_mutex);
+    assert (success == 0);
+}
+
 
 void setStatus(void) {
     int success = pthread_mutex_lock(&music_mutex);
