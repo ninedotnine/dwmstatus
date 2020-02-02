@@ -267,7 +267,7 @@ int main(int argc, char * argv[]) {
 
     if (! noNetwork) {
         if (update_mode || report_mode) {
-            net();
+            update_net_buffer();
         }
         if (daemon_mode) {
             pthread_t network_worker;
