@@ -1,3 +1,5 @@
+#pragma once
+
 /* SETTINGS */
 #define VERSION "0.5.2"
 
