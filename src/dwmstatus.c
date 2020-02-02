@@ -265,6 +265,7 @@ int main(int argc, char * argv[]) {
         fputs("error, problem with snprintf\n", stderr);
         exit(16);
     }
+
     if (! noNetwork) {
         if (updateOnce || reportMode) {
             net();
@@ -281,20 +282,24 @@ int main(int argc, char * argv[]) {
                     stderr);
             return EXIT_FAILURE;
         }
-        if (daemonMode) {
-            daemon(0, 1);
+    }
 
-            pthread_t idler;
-            pthread_create(&idler, NULL, mpd_idler, NULL);
+    if (daemonMode) {
+        daemon(0, 1);
 
-            while (true) {
-                setStatus();
-                sleep(SLEEP_INTERVAL);
-            }
-        } else {
+        pthread_t idler;
+        pthread_create(&idler, NULL, mpd_idler, NULL);
+
+        while (true) {
             setStatus();
+            sleep(SLEEP_INTERVAL);
         }
     }
+
+    if (updateOnce) {
+        setStatus();
+    }
+
     if (reportMode) {
         char * status = buildStatus();
         puts(status);
