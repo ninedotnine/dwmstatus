@@ -27,13 +27,12 @@
 #include <mpd/client.h>
 #include <getopt.h>
 #include <stdbool.h>
-#include <netdb.h>
-#include <errno.h>
 #include <pthread.h>
 
 /* global variables */
 static const char * program_name;
 static Display *dpy;
+static pthread_mutex_t x11_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void * mpd_idler(__attribute__((unused)) void * arg) {
     int success = pthread_detach(pthread_self());
@@ -309,25 +308,25 @@ int main(int argc, char * argv[]) {
 }
 
 void set_status_to(const char * string) {
-    int success = pthread_mutex_lock(&music_mutex);
+    int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), string);
     XSync(dpy, False);
-    success = pthread_mutex_unlock(&music_mutex);
+    success = pthread_mutex_unlock(&x11_mutex);
     assert (success == 0);
 }
 
 
 void setStatus(void) {
-    int success = pthread_mutex_lock(&music_mutex);
+    int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
     char * status = buildStatus();
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status);
     XSync(dpy, False);
     free(status);
-    success = pthread_mutex_unlock(&music_mutex);
+    success = pthread_mutex_unlock(&x11_mutex);
     assert (success == 0);
 }
 
