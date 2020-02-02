@@ -183,8 +183,10 @@ void usage(FILE * stream, int exit_code) {
     fputs(" -h --help         display this message\n", stream);
     fputs(" -u --update       update the x root window once\n", stream);
     fputs(" -d --daemon       run in background\n", stream);
+    fputs(" -f --foreground   like --daemon, but in foreground\n", stream);
     fputs(" -r --report       report status immediately (default)\n", stream);
     fputs(" -n --no-network   skip network check\n", stream);
+    fputs(" -q --quiet        don't output to stdout or stderr\n", stream);
     fputs(" -v --version      output version and exit\n", stream);
     exit(exit_code);
 }
@@ -195,19 +197,23 @@ int main(int argc, char * argv[]) {
     setlocale(LC_ALL, "");
 
     /* list available args */
-    const char * const shortOptions = "hdrunv";
+    const char * const shortOptions = "hdfrunqv";
     const struct option longOptions[] = {
         {"help", 0, NULL, 'h'},
         {"daemon", 0, NULL, 'd'},
+        {"foreground", 0, NULL, 'f'},
         {"report", 0, NULL, 'r'},
         {"update", 0, NULL, 'u'},
         {"no-network", 0, NULL, 'n'},
+        {"quiet", 0, NULL, 'q'},
         {"version", 0, NULL, 'v'},
         {0, 0, 0, 0}, // this is necessary, apparently
     };
 
     /* parse args */
     int nextOption;
+    bool be_quiet = false;
+    bool run_in_foreground = false;
     bool daemon_mode = false;
     bool update_mode = false;
     bool report_mode = false;
@@ -223,6 +229,11 @@ int main(int argc, char * argv[]) {
                 daemon_mode = true;
                 update_mode = false;
                 break;
+            case 'f':
+                daemon_mode = true;
+                update_mode = false;
+                run_in_foreground = true;
+                break;
             case 'r':
                 daemon_mode = false;
                 report_mode = true;
@@ -233,6 +244,9 @@ int main(int argc, char * argv[]) {
                 break;
             case 'n':
                 noNetwork = true;
+                break;
+            case 'q':
+                be_quiet = true;
                 break;
             case 'v':
                 printf("dan's dwmstatus version: %s\n", VERSION);
@@ -283,6 +297,13 @@ int main(int argc, char * argv[]) {
     }
 
     if (daemon_mode) {
+//         if (! run_in_foreground) {
+//             if (be_quiet) {
+//                 daemon(0, 0);
+//             } else {
+//                 daemon(0, 1);
+//             }
+//         }
         daemon(0, 1);
 
         pthread_t idler;

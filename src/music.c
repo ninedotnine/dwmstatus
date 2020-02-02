@@ -40,7 +40,8 @@ struct mpd_connection * establish_mpd_conn(void) {
 
 void getNowPlaying(char * (* const string)) {
     // this function sets the input to NULL if mpd connection fails
-    struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+//     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+    struct mpd_connection *conn = establish_mpd_conn();
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 1\n");
