@@ -211,6 +211,7 @@ int main(int argc, char * argv[]) {
     int nextOption;
     bool daemonMode = false;
     bool updateOnce = false;
+    bool noNetwork = false;
 
     do {
         nextOption = getopt_long(argc, argv, shortOptions, longOptions, NULL);
@@ -245,6 +246,26 @@ int main(int argc, char * argv[]) {
                 exit(EXIT_FAILURE);
         }
     } while (nextOption != -1);
+
+    // initialize the net_buf to a dummy string for now.
+    // the buffer will be later populated by the network_worker,
+    // unless noNetwork is true.
+    int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
+    if (success > MAX_NET_MSG_LEN) {
+        fputs("the net buffer is too small.\n", stderr);
+    } else if (success < 1) {
+        fputs("error, problem with snprintf\n", stderr);
+        exit(16);
+    }
+    if (! noNetwork) {
+        if (updateOnce) {
+            net();
+        }
+        if (daemonMode) {
+            pthread_t network_worker;
+            pthread_create(&network_worker, NULL, network_updater, NULL);
+        }
+    }
 
     if (daemonMode || updateOnce) {
         if (!(dpy = XOpenDisplay(NULL))) {
@@ -297,9 +318,11 @@ char * buildStatus(void) {
     getAvgs(&avgs);
     getBattery(&batt);
     getTemperature(&temper);
-    net();
     getdatetime(&time);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
+
+    int success = pthread_mutex_lock(&net_buf_mutex);
+    assert(success == 0);
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that
     if (asprintf(&status, OUTFORMAT,
@@ -311,6 +334,9 @@ char * buildStatus(void) {
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(EXIT_FAILURE);
     }
+    success = pthread_mutex_unlock(&net_buf_mutex);
+    assert(success == 0);
+
     free(batt);
     free(temper);
     free(time);

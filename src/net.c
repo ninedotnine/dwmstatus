@@ -1,28 +1,19 @@
 #include "net.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <netdb.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 
-
+pthread_mutex_t net_buf_mutex = PTHREAD_MUTEX_INITIALIZER;
 char net_buf[MAX_NET_MSG_LEN];
-bool noNetwork = false;
 
 void net(void) {
-    if (noNetwork) {
-        int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
-        if (success > MAX_NET_MSG_LEN) {
-            fputs("net output truncated\n", stderr);
-        } else if (success < 1) {
-            fputs("error, problem with snprintf\n", stderr);
-            exit(15);
-        }
-        return;
-    }
     struct addrinfo * info = NULL;
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
@@ -64,4 +55,17 @@ void net(void) {
         }
     }
     freeaddrinfo(info);
+}
+
+void * network_updater(__attribute__((unused)) void * arg) {
+    int success = pthread_detach(pthread_self());
+    assert (success == 0);
+    while (true) {
+        success = pthread_mutex_lock(&net_buf_mutex);
+        assert(success == 0);
+        net();
+        success = pthread_mutex_unlock(&net_buf_mutex);
+        assert(success == 0);
+        sleep(SLEEP_INTERVAL);
+    }
 }
