@@ -93,7 +93,7 @@ void getdatetime(char * (* const input)) {
     }
 }
 
-int getfiledata(const char *filename) {
+int getfiledata(const char * const filename) {
     // this function parses an int from filename
     FILE *fd;
     int result;

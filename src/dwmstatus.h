@@ -1,8 +1,8 @@
-void getdatetime(char * (* const input));
-int getfiledata(const char *filename);
-void getTemperature(char * (* const result));
-void getBattery(char * (* const batt));
-void net(char * (* const netOK));
+void getdatetime(char ** input);
+int getfiledata(const char * filename);
+void getTemperature(char ** result);
+void getBattery(char ** batt);
+void net(char ** netOK);
 void handle_mpd_error(struct mpd_connection *c);
 void getAvgs(double (* avgs)[3]);
 void usage(FILE * stream, int exit_code);
