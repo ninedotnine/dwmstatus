@@ -6,7 +6,6 @@ void getdatetime(char ** input);
 int getfiledata(const char * filename);
 void getTemperature(char ** result);
 void getBattery(char ** batt);
-void net(void);
 void handle_mpd_error(struct mpd_connection *c);
 void getAvgs(double (* avgs)[3]);
 void usage(FILE * stream, int exit_code);
