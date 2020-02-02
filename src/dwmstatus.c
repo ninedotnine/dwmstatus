@@ -35,10 +35,8 @@ static const char * program_name;
 static bool noNetwork = false;
 static Display *dpy;
 
-
 #define MAX_NET_MSG_LEN 99
-static char netOK[MAX_NET_MSG_LEN];
-
+static char net_buf[MAX_NET_MSG_LEN];
 
 void * mpd_idler(__attribute__((unused)) void * arg) {
     int success = pthread_detach(pthread_self());
@@ -167,7 +165,7 @@ void getBattery(char * (* const batt)) {
 
 void net(void) {
     if (noNetwork) {
-        int success = snprintf(netOK, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
+        int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
         if (success > MAX_NET_MSG_LEN) {
             fputs("net output truncated\n", stderr);
         } else if (success < 1) {
@@ -180,7 +178,7 @@ void net(void) {
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-        int success = snprintf(netOK, MAX_NET_MSG_LEN, "%s", COLO_RED "NET" COLO_RESET);
+        int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s", COLO_RED "NET" COLO_RESET);
         if (success > MAX_NET_MSG_LEN) {
             fputs("net output truncated\n", stderr);
         } else if (success < 1) {
@@ -189,7 +187,7 @@ void net(void) {
         }
     } else if (info == NULL) {
         fprintf(stderr, "net error: error is 0 but info is null\n");
-        int success = snprintf(netOK, MAX_NET_MSG_LEN, "%s", COLO_RED "NET" COLO_RESET);
+        int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s", COLO_RED "NET" COLO_RESET);
         if (success > MAX_NET_MSG_LEN) {
             fputs("net output truncated\n", stderr);
         } else if (success < 1) {
@@ -204,9 +202,9 @@ void net(void) {
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
             int errnum = errno;
             fprintf(stderr, "errno is: %i\n", errnum);
-            success = snprintf(netOK, MAX_NET_MSG_LEN, "%sNET%s", COLO_YELLOW, COLO_RESET);
+            success = snprintf(net_buf, MAX_NET_MSG_LEN, "%sNET%s", COLO_YELLOW, COLO_RESET);
         } else {
-            success = snprintf(netOK, MAX_NET_MSG_LEN, "%s5x5%s", COLO_DEEPGREEN, COLO_RESET);
+            success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s5x5%s", COLO_DEEPGREEN, COLO_RESET);
         }
         close(sockfd);
         if (success > MAX_NET_MSG_LEN) {
@@ -365,7 +363,7 @@ char * buildStatus(void) {
                  avgs[0], avgs[1], avgs[2],
                  batt,
                  temper,
-                 netOK, time) == -1) {
+                 net_buf, time) == -1) {
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(EXIT_FAILURE);
     }
