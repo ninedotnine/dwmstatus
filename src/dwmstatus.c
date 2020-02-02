@@ -172,14 +172,13 @@ void net(char * (* const netOK)) {
     int error = getaddrinfo("google.com", "80", NULL, &info);
     if (error != 0) {
         fprintf(stderr, "error: getaddrinfo: %s\n", gai_strerror(error));
-        if (asprintf(netOK, "%s%s%s", COLO_RED,
-                                      gai_strerror(error),
-                                      COLO_RESET) == -1) {
+        if (asprintf(netOK, "%s", COLO_RED "NET" COLO_RESET) == -1) {
             fputs("error, cannot allocate mem\n", stderr);
             exit(12);
         }
     } else if (info == NULL) {
-        if (asprintf(netOK, "could not getaddrinfo") == -1) {
+        fprintf(stderr, "net error: error is 0 but info is null\n");
+        if (asprintf(netOK, "%s", COLO_RED "NET" COLO_RESET) == -1) {
             fputs("error, cannot allocate mem\n", stderr);
             exit(13);
         }
