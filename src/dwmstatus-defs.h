@@ -11,8 +11,10 @@
 #define WARN_LOW_BATT 9
 // what the battery warning says
 #define WARN_LOW_BATT_TEXT "coliss"
+// how many chars to allocate for the network string
+#define MAX_NET_MSG_LEN 64
 
-// 10 seconds between iterations
+// how many seconds between iterations
 #define SLEEP_INTERVAL 20
 
 // locations of files

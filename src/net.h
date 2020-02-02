@@ -1,7 +1,5 @@
 #pragma once
 
-#define MAX_NET_MSG_LEN 99
-
 #include "dwmstatus-defs.h"
 
 #include <stdbool.h>
