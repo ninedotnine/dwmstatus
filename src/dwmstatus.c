@@ -309,14 +309,14 @@ int main(int argc, char * argv[]) {
 }
 
 void setStatus(void) {
-    int success = pthread_mutex_lock(&mutex);
+    int success = pthread_mutex_lock(&music_mutex);
     assert (success == 0);
     char * status = buildStatus();
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status);
     XSync(dpy, False);
     free(status);
-    success = pthread_mutex_unlock(&mutex);
+    success = pthread_mutex_unlock(&music_mutex);
     assert (success == 0);
 }
 

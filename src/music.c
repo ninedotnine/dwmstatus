@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t music_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void handle_mpd_error(struct mpd_connection *c) {
     assert(mpd_connection_get_error(c) != MPD_ERROR_SUCCESS);
@@ -15,22 +15,22 @@ void handle_mpd_error(struct mpd_connection *c) {
 }
 
 struct mpd_connection * establish_mpd_conn(void) {
-    int success = pthread_mutex_lock(&mutex);
+    int success = pthread_mutex_lock(&music_mutex);
     assert (success == 0);
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
 
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "mpd_idler: ");
         handle_mpd_error(conn);
-        success = pthread_mutex_unlock(&mutex);
+        success = pthread_mutex_unlock(&music_mutex);
         assert (success == 0);
         sleep(15);
-        success = pthread_mutex_lock(&mutex);
+        success = pthread_mutex_lock(&music_mutex);
         assert (success == 0);
         conn = mpd_connection_new(NULL, 0, 10000);
     }
 
-    success = pthread_mutex_unlock(&mutex);
+    success = pthread_mutex_unlock(&music_mutex);
     assert (success == 0);
 
     return conn;

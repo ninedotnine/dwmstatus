@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <mpd/client.h>
 
-extern pthread_mutex_t mutex;
+extern pthread_mutex_t music_mutex;
 
 void handle_mpd_error(struct mpd_connection *c);
 
