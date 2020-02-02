@@ -211,6 +211,7 @@ int main(int argc, char * argv[]) {
     int nextOption;
     bool daemonMode = false;
     bool updateOnce = false;
+    bool reportMode = false;
     bool noNetwork = false;
 
     do {
@@ -226,6 +227,7 @@ int main(int argc, char * argv[]) {
             case 'r':
                 daemonMode = false;
                 updateOnce = false;
+                reportMode = true;
                 break;
             case 'u':
                 updateOnce = true;
@@ -248,6 +250,10 @@ int main(int argc, char * argv[]) {
                 exit(EXIT_FAILURE);
         }
     } while (nextOption != -1);
+
+    if (! (updateOnce || daemonMode || reportMode)) {
+        reportMode = true;
+    }
 
     // initialize the net_buf to a dummy string for now.
     // the buffer will be later populated by the network_worker,
@@ -288,7 +294,8 @@ int main(int argc, char * argv[]) {
         } else {
             setStatus();
         }
-    } else {
+    }
+    if (reportMode) {
         char * status = buildStatus();
         puts(status);
         free(status);
