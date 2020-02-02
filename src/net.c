@@ -12,7 +12,7 @@
 char net_buf[MAX_NET_MSG_LEN];
 bool noNetwork = false;
 
-void net() {
+void net(void) {
     if (noNetwork) {
         int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
         if (success > MAX_NET_MSG_LEN) {
