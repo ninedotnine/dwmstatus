@@ -46,9 +46,9 @@ void update_net_buffer(void) {
         if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
             int errnum = errno;
             fprintf(stderr, "errno is: %i\n", errnum);
-            write_to_net_buf(COLO_YELLOW "%sNET%s" COLO_RESET);
+            write_to_net_buf(COLO_YELLOW "NET" COLO_RESET);
         } else {
-            write_to_net_buf(COLO_DEEPGREEN "%s5x5%s" COLO_RESET);
+            write_to_net_buf(COLO_DEEPGREEN "5x5" COLO_RESET);
         }
         close(sockfd);
     }
