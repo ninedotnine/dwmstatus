@@ -98,7 +98,7 @@ void getTemperature(char * (* const result)) {
     asprintf(result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
 }
 
-void getBattery(char buffer[static BATT_STR_LEN]) {
+void get_batt(char buffer[static BATT_STR_LEN]) {
     bool chargin = false;
     int capacity = read_int_from_file(BATT_CAPACITY);
     if (capacity < 95) {
@@ -354,7 +354,7 @@ char * buildStatus(char * net_buf) {
     static char * nowPlaying;
 
     getAvgs(&avgs);
-    getBattery(batt_buf);
+    get_batt(batt_buf);
     getTemperature(&temper);
     get_time(time_buf);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
