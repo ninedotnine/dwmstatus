@@ -34,7 +34,8 @@ static const char * program_name;
 static Display *dpy;
 static pthread_mutex_t x11_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void * mpd_idler(__attribute__((unused)) void * arg) {
+void * mpd_idler(void * arg) {
+    char * net_buf = arg;
     int success = pthread_detach(pthread_self());
     assert (success == 0);
 
@@ -46,7 +47,7 @@ void * mpd_idler(__attribute__((unused)) void * arg) {
             mpd_connection_free(conn);
             conn = establish_mpd_conn();
         }
-        setStatus();
+        setStatus(net_buf);
     }
 }
 
@@ -270,22 +271,13 @@ int main(int argc, char * argv[]) {
     // initialize the net_buf to a dummy string for now.
     // the buffer will be later populated by the network_worker,
     // unless noNetwork is true.
+    char net_buf[MAX_NET_MSG_LEN];
     int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
     if (success > MAX_NET_MSG_LEN) {
         fputs("the net buffer is too small.\n", stderr);
     } else if (success < 1) {
         fputs("error, problem with snprintf\n", stderr);
         exit(16);
-    }
-
-    if (! noNetwork) {
-        if (update_mode || report_mode) {
-            update_net_buffer();
-        }
-        if (daemon_mode) {
-            pthread_t network_worker;
-            pthread_create(&network_worker, NULL, network_updater, NULL);
-        }
     }
 
     if (daemon_mode || update_mode) {
@@ -304,19 +296,31 @@ int main(int argc, char * argv[]) {
 //                 daemon(0, 1);
 //             }
 //         }
-        daemon(0, 1);
 
+    }
+
+    if (! noNetwork) {
+        if (update_mode || report_mode) {
+            update_net_buffer(net_buf);
+        }
+        if (daemon_mode) {
+            pthread_t network_worker;
+            pthread_create(&network_worker, NULL, network_updater, net_buf);
+        }
+    }
+
+    if (daemon_mode) {
         pthread_t idler;
-        pthread_create(&idler, NULL, mpd_idler, NULL);
+        pthread_create(&idler, NULL, mpd_idler, net_buf);
 
         while (true) {
-            setStatus();
+            setStatus(net_buf);
             sleep(SLEEP_INTERVAL);
         }
     }
 
     if (update_mode || report_mode) {
-        char * status = buildStatus();
+        char * status = buildStatus(net_buf);
         if (update_mode) {
             set_status_to(status);
         }
@@ -339,10 +343,10 @@ void set_status_to(const char * string) {
 }
 
 
-void setStatus(void) {
+void setStatus(char * net_buf) {
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
-    char * status = buildStatus();
+    char * status = buildStatus(net_buf);
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status);
     XSync(dpy, False);
@@ -351,7 +355,7 @@ void setStatus(void) {
     assert (success == 0);
 }
 
-char * buildStatus(void) {
+char * buildStatus(char * net_buf) {
     // you need to call free() after calling this function!
     char * status;
     static double avgs[3];
