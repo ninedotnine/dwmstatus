@@ -56,16 +56,16 @@ void * mpd_idler(void * arg) {
     }
 }
 
-void getdatetime(char buffer[static 32]) {
-    time_t result = time(NULL);
-    struct tm *resulttm = localtime(&result);
+void get_time(char buffer[static 32]) {
+    time_t cur_time = time(NULL);
+    struct tm *cur_tm = localtime(&cur_time);
 
-    if (resulttm == NULL) {
+    if (cur_tm == NULL) {
         fputs("Error getting localtime.\n", stderr);
         snprintf(buffer, 32, "time ???");
         return;
     }
-    if (! strftime(buffer, 32, TIMESTRING, resulttm)) {
+    if (! strftime(buffer, 32, TIMESTRING, cur_tm)) {
         fputs("strftime is 0.\n", stderr);
         snprintf(buffer, 32, "time ????");
     }
@@ -80,7 +80,7 @@ int getfiledata(const char * const filename) {
         fputs("error in getfiledata()\n", stderr);
         fprintf(stderr, "filename is %s\n", filename);
         char time_buf[32];
-        getdatetime(time_buf);
+        get_time(time_buf);
         fprintf(stderr, "time: %s\n", (time_buf));
         return -1;
     }
@@ -373,7 +373,7 @@ char * buildStatus(char * net_buf) {
     getAvgs(&avgs);
     getBattery(&batt);
     getTemperature(&temper);
-    getdatetime(time);
+    get_time(time);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
 
     int success = pthread_mutex_lock(&net_buf_mutex);
