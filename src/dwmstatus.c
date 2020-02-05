@@ -289,14 +289,13 @@ int main(int argc, char * argv[]) {
     }
 
     if (daemon_mode) {
-//         if (! run_in_foreground) {
-//             if (be_quiet) {
-//                 daemon(0, 0);
-//             } else {
-//                 daemon(0, 1);
-//             }
-//         }
-
+        if (! run_in_foreground) {
+            if (be_quiet) {
+                daemon(0, 0);
+            } else {
+                daemon(0, 1);
+            }
+        }
     }
 
     if (! noNetwork) {
