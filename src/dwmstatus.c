@@ -62,13 +62,13 @@ void get_time(char buffer[static TIME_STR_LEN]) {
 
     if (cur_tm == NULL) {
         fputs("Error getting localtime.\n", stderr);
-        snprintf(buffer, TIME_STR_LEN, "time ???");
+        snprintf(buffer, TIME_STR_LEN, COLO_RED "???" COLO_RESET);
         return;
     }
     size_t length = strftime(buffer, TIME_STR_LEN, TIME_STR_FMT, cur_tm);
     if (length < 1) {
         fputs("strftime is 0.\n", stderr);
-        snprintf(buffer, TIME_STR_LEN, "time ????");
+        snprintf(buffer, TIME_STR_LEN, COLO_RED "???" COLO_RESET);
     }
 }
 
