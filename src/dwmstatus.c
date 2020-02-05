@@ -102,7 +102,7 @@ void getTemperature(char * (* const result)) {
     asprintf(result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
 }
 
-void getBattery(char * (* const batt)) {
+void getBattery(char buffer[static BATT_STR_LEN]) {
     bool chargin = false;
     int capacity = read_int_from_file(BATT_CAPACITY);
     if (capacity < 95) {
@@ -110,7 +110,7 @@ void getBattery(char * (* const batt)) {
         fd = fopen(BATT_STATUS, "r");
         if (fd == NULL) {
             fputs("Error opening BATT_STATUS.\n", stderr);
-            asprintf(batt, "%s? %d%%%s", COLO_RED, capacity, COLO_RESET);
+            snprintf(buffer, BATT_STR_LEN, "%s?%d%%%s", COLO_RED, capacity, COLO_RESET);
             return;
         }
 
@@ -151,12 +151,8 @@ void getBattery(char * (* const batt)) {
         colo = COLO_RED;
     }
 
-    if (asprintf(batt, "%s%i%%%s", colo, capacity, COLO_RESET) == -1) {
-        fputs("whoooaaa, test in getBattery was -1", stderr);
-        exit(EXIT_FAILURE);
-    }
+    snprintf(buffer, BATT_STR_LEN, "%s%i%%%s", colo, capacity, COLO_RESET);
 }
-
 
 void getAvgs(double (* avgs)[3]) {
     // is this dumb?
@@ -361,13 +357,13 @@ char * buildStatus(char * net_buf) {
     // you need to call free() after calling this function!
     char * status;
     static double avgs[3];
-    static char * batt;
+    char batt_buf[BATT_STR_LEN];
     static char * temper;
     char time_buf[TIME_STR_LEN];
     static char * nowPlaying;
 
     getAvgs(&avgs);
-    getBattery(&batt);
+    getBattery(batt_buf);
     getTemperature(&temper);
     get_time(time_buf);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
@@ -379,7 +375,7 @@ char * buildStatus(char * net_buf) {
     if (asprintf(&status, OUTFORMAT,
                  (nowPlaying ? nowPlaying : ""),
                  avgs[0], avgs[1], avgs[2],
-                 batt,
+                 batt_buf,
                  temper,
                  net_buf, time_buf) == -1) {
         fputs("error, unable to malloc() in asprintf()", stderr);
@@ -388,7 +384,6 @@ char * buildStatus(char * net_buf) {
     success = pthread_mutex_unlock(&net_buf_mutex);
     assert(success == 0);
 
-    free(batt);
     free(temper);
     free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;

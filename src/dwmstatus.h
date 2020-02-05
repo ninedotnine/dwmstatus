@@ -5,7 +5,7 @@
 void get_time(char buffer[static TIME_STR_LEN]);
 int read_int_from_file(const char * filename);
 void getTemperature(char ** result);
-void getBattery(char ** batt);
+void getBattery(char buffer[static BATT_STR_LEN]);
 void handle_mpd_error(struct mpd_connection *c);
 void getAvgs(double (* avgs)[3]);
 void usage(FILE * stream, int exit_code);

@@ -6,6 +6,8 @@
 #define TIME_STR_FMT "%a %d %b  %H:%M"
 // how many chars to allocate for the date/time
 #define TIME_STR_LEN 32
+// how many chars to allocate for the battery
+#define BATT_STR_LEN 16
 // the format for everything
 #define OUTFORMAT "%s[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery
