@@ -110,15 +110,11 @@ void getBattery(char buffer[static BATT_STR_LEN]) {
             return;
         }
 
-        char * status;
-        if ((status = calloc(15, sizeof(char))) == NULL) {
-            exit(11);
-        }
+        char status[16] = {0};
         fgets(status, 15, fd);
         fclose(fd);
 
         chargin = (0 != strncmp(status, "Discharging", 11));
-        free(status);
         if (! chargin && capacity <= WARN_LOW_BATT) {
             fputs("low battery warning\n", stderr);
 #ifdef ZENITY
