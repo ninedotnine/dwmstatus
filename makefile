@@ -1,6 +1,6 @@
 VERSION = $(shell git describe)
 CC ?= gcc
-DEFS = -D _GNU_SOURCE -D VERSION=\"$(VERSION)\"
+DEFS = -D _GNU_SOURCE -D VERSION=\"$(VERSION)\" -D ZENITY
 CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion -Wcast-align=strict
 FILES = src/dwmstatus.c src/music.c src/net.c
 OUT_EXE = bin/dwmstatus

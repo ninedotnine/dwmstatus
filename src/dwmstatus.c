@@ -4,10 +4,6 @@
  * colours!!!
  */
 
-// ideally this would only be defined if i knew zenity was installed
-// but fuck that, right???? who even needs makefiles
-#define zenity
-
 // NDEBUG turns off all assert() calls
 // #define NDEBUG
 
@@ -125,9 +121,8 @@ void getBattery(char buffer[static BATT_STR_LEN]) {
         free(status);
         if (! chargin && capacity <= WARN_LOW_BATT) {
             fputs("low battery warning\n", stderr);
-#ifdef zenity
+#ifdef ZENITY
             // display a warning on low battery and not plugged in.
-            // depends on zenity
             if (! fork()) {
                 char * const args[] = {"zenity", "--warning", "--width=600",
                     "--text=" WARN_LOW_BATT_TEXT, NULL};
