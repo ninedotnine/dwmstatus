@@ -71,13 +71,13 @@ void get_time(char buffer[static TIME_STR_LEN]) {
     }
 }
 
-int getfiledata(const char * const filename) {
+int read_int_from_file(const char * const filename) {
     // this function parses an int from filename
     FILE *fd;
     int result;
     fd = fopen(filename, "r");
     if (fd == NULL) {
-        fputs("error in getfiledata()\n", stderr);
+        fputs("error in read_int_from_file()\n", stderr);
         fprintf(stderr, "filename is %s\n", filename);
         char time_buf[TIME_STR_LEN];
         get_time(time_buf);
@@ -90,7 +90,7 @@ int getfiledata(const char * const filename) {
 }
 
 void getTemperature(char * (* const result)) {
-    double temper = getfiledata(TEMPERATURE) / 1000.0;
+    double temper = read_int_from_file(TEMPERATURE) / 1000.0;
     char * colo;
     if (temper > 85) {
         colo = COLO_RED;
@@ -107,7 +107,7 @@ void getTemperature(char * (* const result)) {
 void getBattery(char * (* const batt)) {
     int capacity;
     bool chargin = false;
-    capacity = getfiledata(BATT_CAPACITY);
+    capacity = read_int_from_file(BATT_CAPACITY);
     if (capacity < 95) {
         FILE *fd;
         fd = fopen(BATT_STATUS, "r");

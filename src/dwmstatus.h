@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void get_time(char buffer[static TIME_STR_LEN]);
-int getfiledata(const char * filename);
+int read_int_from_file(const char * filename);
 void getTemperature(char ** result);
 void getBattery(char ** batt);
 void handle_mpd_error(struct mpd_connection *c);
