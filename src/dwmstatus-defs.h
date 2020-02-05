@@ -1,7 +1,6 @@
 #pragma once
 
 /* SETTINGS */
-#define VERSION "0.7.1"
 
 // the format for the date/time
 #define TIMESTRING "%a %d %b  %H:%M"
