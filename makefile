@@ -1,6 +1,6 @@
 VERSION = $(shell git describe)
 CC ?= gcc
-GNU = -D _GNU_SOURCE
+DEFS = -D _GNU_SOURCE -D VERSION=\"$(VERSION)\"
 CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion -Wcast-align=strict
 FILES = src/dwmstatus.c src/music.c src/net.c
 OUT_EXE = bin/dwmstatus
@@ -11,7 +11,7 @@ DEBUGFLAGS = -fsanitize=thread
 
 build:
 	mkdir -p bin
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(GNU) $(INCLUDES) -D VERSION=\"$(VERSION)\" -o $(OUT_EXE) $(FILES) $(LIBS)
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(DEFS) $(INCLUDES) -o $(OUT_EXE) $(FILES) $(LIBS)
 
 clean:
 	rm -f $(OUT_EXE)
