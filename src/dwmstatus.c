@@ -56,18 +56,18 @@ void * mpd_idler(void * arg) {
     }
 }
 
-void get_time(char buffer[static 32]) {
+void get_time(char buffer[static TIME_STR_LEN]) {
     time_t cur_time = time(NULL);
     struct tm *cur_tm = localtime(&cur_time);
 
     if (cur_tm == NULL) {
         fputs("Error getting localtime.\n", stderr);
-        snprintf(buffer, 32, "time ???");
+        snprintf(buffer, TIME_STR_LEN, "time ???");
         return;
     }
-    if (! strftime(buffer, 32, TIMESTRING, cur_tm)) {
+    if (! strftime(buffer, TIME_STR_LEN, TIMESTRING, cur_tm)) {
         fputs("strftime is 0.\n", stderr);
-        snprintf(buffer, 32, "time ????");
+        snprintf(buffer, TIME_STR_LEN, "time ????");
     }
 }
 
@@ -79,7 +79,7 @@ int getfiledata(const char * const filename) {
     if (fd == NULL) {
         fputs("error in getfiledata()\n", stderr);
         fprintf(stderr, "filename is %s\n", filename);
-        char time_buf[32];
+        char time_buf[TIME_STR_LEN];
         get_time(time_buf);
         fprintf(stderr, "time: %s\n", (time_buf));
         return -1;
@@ -367,7 +367,7 @@ char * buildStatus(char * net_buf) {
     static char * batt;
     static char * temper;
 //     static char * time;
-    char time[32];
+    char time[TIME_STR_LEN];
     static char * nowPlaying;
 
     getAvgs(&avgs);

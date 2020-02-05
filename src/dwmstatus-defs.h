@@ -4,6 +4,8 @@
 
 // the format for the date/time
 #define TIMESTRING "%a %d %b  %H:%M"
+// how many chars to allocate for the date/time
+#define TIME_STR_LEN 32
 // the format for everything
 #define OUTFORMAT "%s[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery

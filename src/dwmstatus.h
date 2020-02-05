@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-void get_time(char buffer[static 32]);
+void get_time(char buffer[static TIME_STR_LEN]);
 int getfiledata(const char * filename);
 void getTemperature(char ** result);
 void getBattery(char ** batt);
