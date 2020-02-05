@@ -1,5 +1,5 @@
 VERSION = $(shell git describe)
-CC = gcc
+CC ?= gcc
 GNU = -D _GNU_SOURCE
 CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion -Wcast-align=strict
 FILES = src/dwmstatus.c src/music.c src/net.c
