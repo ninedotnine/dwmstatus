@@ -56,14 +56,10 @@ void * mpd_idler(void * arg) {
     }
 }
 
-// void getdatetime(char * (* const input)) {
-// void getdatetime(char (* input)[static 32]) {
 void getdatetime(char buffer[static 32]) {
-    time_t result;
-    struct tm *resulttm;
+    time_t result = time(NULL);
+    struct tm *resulttm = localtime(&result);
 
-    result = time(NULL);
-    resulttm = localtime(&result);
     if (resulttm == NULL) {
         fputs("Error getting localtime.\n", stderr);
         snprintf(buffer, 32, "time ???");
