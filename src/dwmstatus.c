@@ -65,7 +65,7 @@ void get_time(char buffer[static TIME_STR_LEN]) {
         snprintf(buffer, TIME_STR_LEN, "time ???");
         return;
     }
-    if (! strftime(buffer, TIME_STR_LEN, TIMESTRING, cur_tm)) {
+    if (! strftime(buffer, TIME_STR_LEN, TIME_STR_FMT, cur_tm)) {
         fputs("strftime is 0.\n", stderr);
         snprintf(buffer, TIME_STR_LEN, "time ????");
     }
@@ -366,13 +366,13 @@ char * buildStatus(char * net_buf) {
     static double avgs[3];
     static char * batt;
     static char * temper;
-    char time[TIME_STR_LEN];
+    char time_buf[TIME_STR_LEN];
     static char * nowPlaying;
 
     getAvgs(&avgs);
     getBattery(&batt);
     getTemperature(&temper);
-    get_time(time);
+    get_time(time_buf);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
 
     int success = pthread_mutex_lock(&net_buf_mutex);
@@ -384,7 +384,7 @@ char * buildStatus(char * net_buf) {
                  avgs[0], avgs[1], avgs[2],
                  batt,
                  temper,
-                 net_buf, time) == -1) {
+                 net_buf, time_buf) == -1) {
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(EXIT_FAILURE);
     }

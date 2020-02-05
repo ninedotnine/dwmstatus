@@ -3,7 +3,7 @@
 /* SETTINGS */
 
 // the format for the date/time
-#define TIMESTRING "%a %d %b  %H:%M"
+#define TIME_STR_FMT "%a %d %b  %H:%M"
 // how many chars to allocate for the date/time
 #define TIME_STR_LEN 32
 // the format for everything
