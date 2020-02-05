@@ -65,7 +65,8 @@ void get_time(char buffer[static TIME_STR_LEN]) {
         snprintf(buffer, TIME_STR_LEN, "time ???");
         return;
     }
-    if (! strftime(buffer, TIME_STR_LEN, TIME_STR_FMT, cur_tm)) {
+    size_t length = strftime(buffer, TIME_STR_LEN, TIME_STR_FMT, cur_tm);
+    if (length < 1) {
         fputs("strftime is 0.\n", stderr);
         snprintf(buffer, TIME_STR_LEN, "time ????");
     }
