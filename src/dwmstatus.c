@@ -120,9 +120,9 @@ void getBattery(char buffer[static BATT_STR_LEN]) {
 #ifdef ZENITY
             // display a warning on low battery and not plugged in.
             if (! fork()) {
-                char * const args[] = {"zenity", "--warning", "--width=600",
+                char * const args[] = {"env", "zenity", "--warning", "--width=600",
                     "--text=" WARN_LOW_BATT_TEXT, NULL};
-                execv("/usr/bin/zenity", args);
+                execv("/usr/bin/env", args);
             }
 #endif
         }
