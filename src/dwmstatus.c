@@ -69,6 +69,7 @@ void getdatetime(char * (* const input)) {
     if (resulttm == NULL) {
         fputs("Error getting localtime.\n", stderr);
         sprintf((*input), "time ???");
+        return;
     }
     if (! strftime((*input), sizeof(char)*65-1, TIMESTRING, resulttm)) {
         fputs("strftime is 0.\n", stderr);
