@@ -316,9 +316,7 @@ int main(int argc, char * argv[]) {
             setStatus(net_buf);
             sleep(SLEEP_INTERVAL);
         }
-    }
-
-    if (update_mode || report_mode) {
+    } else {
         char * status = buildStatus(net_buf);
         if (update_mode) {
             set_status_to(status);
@@ -327,8 +325,8 @@ int main(int argc, char * argv[]) {
             puts(status);
         }
         free(status);
+        return 0;
     }
-    return 0;
 }
 
 void set_status_to(const char * string) {
