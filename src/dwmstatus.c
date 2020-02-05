@@ -76,11 +76,9 @@ int read_int_from_file(const char * const filename) {
     FILE *fd = fopen(filename, "r");
     int result;
     if (fd == NULL) {
-        fputs("error in read_int_from_file()\n", stderr);
-        fprintf(stderr, "filename is %s\n", filename);
         char time_buf[TIME_STR_LEN];
         get_time(time_buf);
-        fprintf(stderr, "time: %s\n", (time_buf));
+        fprintf(stderr, "error opening %s at %s\n", filename, time_buf);
         return -1;
     }
     fscanf(fd, "%d", &result);
