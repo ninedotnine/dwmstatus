@@ -26,6 +26,7 @@
 #include <X11/Xlib.h>
 #include <mpd/client.h>
 #include <getopt.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -33,6 +34,10 @@
 static const char * program_name;
 static Display *dpy;
 static pthread_mutex_t x11_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static void handle_signal(__attribute__((unused)) int sig) {
+    // do nothing...
+}
 
 void * mpd_idler(void * arg) {
     char * net_buf = arg;
@@ -311,6 +316,14 @@ int main(int argc, char * argv[]) {
     if (daemon_mode) {
         pthread_t idler;
         pthread_create(&idler, NULL, mpd_idler, net_buf);
+
+        /* set up signal handling. */
+        struct sigaction sa;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_handler = handle_signal;
+        sa.sa_flags = SA_RESTART;
+        success = sigaction(SIGUSR1, &sa, NULL);
+        assert (success == 0);
 
         while (true) {
             setStatus(net_buf);
