@@ -366,7 +366,6 @@ char * buildStatus(char * net_buf) {
     static double avgs[3];
     static char * batt;
     static char * temper;
-//     static char * time;
     char time[TIME_STR_LEN];
     static char * nowPlaying;
 
@@ -394,7 +393,6 @@ char * buildStatus(char * net_buf) {
 
     free(batt);
     free(temper);
-//     free(time);
     free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;
 }
