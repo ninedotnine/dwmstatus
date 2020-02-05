@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-void getdatetime(char ** input);
+void getdatetime(char buffer[static 32]);
 int getfiledata(const char * filename);
 void getTemperature(char ** result);
 void getBattery(char ** batt);

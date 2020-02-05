@@ -56,24 +56,22 @@ void * mpd_idler(void * arg) {
     }
 }
 
-void getdatetime(char * (* const input)) {
+// void getdatetime(char * (* const input)) {
+// void getdatetime(char (* input)[static 32]) {
+void getdatetime(char buffer[static 32]) {
     time_t result;
     struct tm *resulttm;
 
-    if (((*input) = calloc(65, sizeof(char))) == NULL) {
-        fputs("Cannot allocate memory for buf.\n", stderr);
-        exit(10);
-    }
     result = time(NULL);
     resulttm = localtime(&result);
     if (resulttm == NULL) {
         fputs("Error getting localtime.\n", stderr);
-        sprintf((*input), "time ???");
+        snprintf(buffer, 32, "time ???");
         return;
     }
-    if (! strftime((*input), sizeof(char)*65-1, TIMESTRING, resulttm)) {
+    if (! strftime(buffer, 32, TIMESTRING, resulttm)) {
         fputs("strftime is 0.\n", stderr);
-        sprintf((*input), "time ????");
+        snprintf(buffer, 32, "time ????");
     }
 }
 
@@ -85,9 +83,9 @@ int getfiledata(const char * const filename) {
     if (fd == NULL) {
         fputs("error in getfiledata()\n", stderr);
         fprintf(stderr, "filename is %s\n", filename);
-        char ** dumb = NULL;
-        getdatetime(dumb);
-        fprintf(stderr, "time: %s\n", (*dumb));
+        char time_buf[32];
+        getdatetime(time_buf);
+        fprintf(stderr, "time: %s\n", (time_buf));
         return -1;
     }
     fscanf(fd, "%d", &result);
@@ -372,13 +370,14 @@ char * buildStatus(char * net_buf) {
     static double avgs[3];
     static char * batt;
     static char * temper;
-    static char * time;
+//     static char * time;
+    char time[32];
     static char * nowPlaying;
 
     getAvgs(&avgs);
     getBattery(&batt);
     getTemperature(&temper);
-    getdatetime(&time);
+    getdatetime(time);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
 
     int success = pthread_mutex_lock(&net_buf_mutex);
@@ -399,7 +398,7 @@ char * buildStatus(char * net_buf) {
 
     free(batt);
     free(temper);
-    free(time);
+//     free(time);
     free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;
 }
