@@ -1,6 +1,5 @@
 /*
  * 9.9
- * consider replacing getAvgs() with a read from /proc/loadavg
  * colours!!!
  */
 
@@ -145,11 +144,11 @@ void get_batt(char buffer[static BATT_STR_LEN]) {
     snprintf(buffer, BATT_STR_LEN, "%s%i%%%s", colo, capacity, COLO_RESET);
 }
 
-void getAvgs(double (* avgs)[3]) {
+void get_avgs(double avgs[static 3]) {
     // is this dumb?
     // you could just read from /proc/loadavg instead...
     // i dunno, the system call is probably just as good...
-    int num_avgs = getloadavg(*avgs, 3);
+    int num_avgs = getloadavg(avgs, 3);
     assert (num_avgs == 3);
     if (num_avgs < 3) {
         if (num_avgs == -1) {
@@ -157,7 +156,7 @@ void getAvgs(double (* avgs)[3]) {
             num_avgs = 0;
         }
         for (int i = num_avgs; i < 3; i++) {
-            (* avgs)[i] = 9.9;
+            avgs[i] = 9.9;
         }
     }
 }
@@ -347,13 +346,13 @@ void setStatus(char * net_buf) {
 char * buildStatus(char * net_buf) {
     // you need to call free() after calling this function!
     char * status;
-    static double avgs[3];
+    double avgs[3];
     char batt_buf[BATT_STR_LEN];
     static char * temper;
     char time_buf[TIME_STR_LEN];
     static char * nowPlaying;
 
-    getAvgs(&avgs);
+    get_avgs(avgs);
     get_batt(batt_buf);
     getTemperature(&temper);
     get_time(time_buf);
