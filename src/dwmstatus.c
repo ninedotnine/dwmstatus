@@ -82,7 +82,7 @@ int read_int_from_file(const char * const filename) {
     return result;
 }
 
-void getTemperature(char * (* const result)) {
+void get_temperature(char buffer[static TEMPERATURE_STR_LEN]) {
     double temper = read_int_from_file(TEMPERATURE) / 1000.0;
     char * colo;
     if (temper > 85) {
@@ -94,7 +94,8 @@ void getTemperature(char * (* const result)) {
     } else {
         colo = ""; // empty string for no colour
     }
-    asprintf(result, "%s%02.1f°C%s", colo, temper, COLO_RESET);
+    snprintf(buffer, TEMPERATURE_STR_LEN, "%s"TEMPERATURE_STR_FMT"%s",
+                                          colo,    temper,    COLO_RESET);
 }
 
 void get_batt(char buffer[static BATT_STR_LEN]) {
@@ -348,13 +349,13 @@ char * buildStatus(char * net_buf) {
     char * status;
     double avgs[3];
     char batt_buf[BATT_STR_LEN];
-    static char * temper;
+    char temperature_buf[TEMPERATURE_STR_LEN];
     char time_buf[TIME_STR_LEN];
     static char * nowPlaying;
 
     get_avgs(avgs);
     get_batt(batt_buf);
-    getTemperature(&temper);
+    get_temperature(temperature_buf);
     get_time(time_buf);
     getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
 
@@ -366,7 +367,7 @@ char * buildStatus(char * net_buf) {
                  (nowPlaying ? nowPlaying : ""),
                  avgs[0], avgs[1], avgs[2],
                  batt_buf,
-                 temper,
+                 temperature_buf,
                  net_buf, time_buf) == -1) {
         fputs("error, unable to malloc() in asprintf()", stderr);
         exit(EXIT_FAILURE);
@@ -374,7 +375,6 @@ char * buildStatus(char * net_buf) {
     success = pthread_mutex_unlock(&net_buf_mutex);
     assert(success == 0);
 
-    free(temper);
     free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;
 }

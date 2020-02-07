@@ -8,6 +8,10 @@
 #define TIME_STR_LEN 32
 // how many chars to allocate for the battery
 #define BATT_STR_LEN 16
+// the format for the cpu temperature
+#define TEMPERATURE_STR_FMT "%02.1f°C"
+// how many chars to allocate for the temperature
+#define TEMPERATURE_STR_LEN 16
 // the format for everything
 #define OUTFORMAT "%s[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery
