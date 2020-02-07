@@ -37,16 +37,13 @@ struct mpd_connection * establish_mpd_conn(void) {
     return conn;
 }
 
-
-void getNowPlaying(char * (* const string)) {
-    // this function sets the input to NULL if mpd connection fails
-//     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
+void get_now_playing(char buffer[MPD_STR_LEN]) {
     struct mpd_connection *conn = establish_mpd_conn();
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 1\n");
         handle_mpd_error(conn);
-        *string = NULL;
+        buffer[0] = '\0';
         return;
     }
 
@@ -55,15 +52,15 @@ void getNowPlaying(char * (* const string)) {
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 2\n");
         handle_mpd_error(conn);
-        *string = NULL;
         mpd_status_free(status);
+        buffer[0] = '\0';
         return;
     }
 
     struct mpd_song *song = mpd_run_current_song(conn);
 
     if (song == NULL || mpd_status_get_state(status) != MPD_STATE_PLAY) {
-        *string = NULL;
+        buffer[0] = '\0';
         if (song != NULL) {
             mpd_song_free(song);
         }
@@ -89,20 +86,20 @@ void getNowPlaying(char * (* const string)) {
     }
     assert(artist != NULL);
 
-    int success;
+    int length;
     if (title == NULL) {
-        success = asprintf(string, "%u/%u: %s%s %s♫%s ", pos, leng, COLO_BLUE,
-                           artist, COLO_MAGENTA, COLO_RESET);
+        length = snprintf(buffer, MPD_STR_LEN, "%u/%u: %s%s %s♫%s ", pos,
+                           leng, COLO_BLUE, artist, COLO_MAGENTA, COLO_RESET);
     } else {
         // make title blue, artist magenta
-        success = asprintf(string, "%u/%u: %s%s%s - %s%s ♫%s ", pos, leng,
-                           COLO_BLUE, title, COLO_RESET, COLO_MAGENTA, artist,
-                           COLO_RESET);
+        length = snprintf(buffer, MPD_STR_LEN, "%u/%u: %s%s%s - %s%s ♫%s ",
+                           pos, leng, COLO_BLUE, title, COLO_RESET,
+                           COLO_MAGENTA, artist, COLO_RESET);
     }
-    if (success == -1) {
-        fprintf(stderr, "handling error 4\n");
-        fputs("error, unable to malloc() in asprintf()", stderr);
-        exit(18);
+    if (length < -1) {
+        fprintf(stderr, "error, snprintf should not return %d\n", length);
+    } else if (length >= MPD_STR_LEN) {
+        fprintf(stderr, "music buffer not long enough, wanted %d bytes\n", length);
     }
 
     mpd_song_free(song);

@@ -351,20 +351,20 @@ char * buildStatus(char * net_buf) {
     char batt_buf[BATT_STR_LEN];
     char temperature_buf[TEMPERATURE_STR_LEN];
     char time_buf[TIME_STR_LEN];
-    static char * nowPlaying;
+    char music_buf[MPD_STR_LEN];
 
     get_avgs(avgs);
     get_batt(batt_buf);
     get_temperature(temperature_buf);
     get_time(time_buf);
-    getNowPlaying(&nowPlaying); // this might set nowPlaying to NULL
+    get_now_playing(music_buf); // this might set nowPlaying to NULL
 
     int success = pthread_mutex_lock(&net_buf_mutex);
     assert(success == 0);
     // thank you, _GNU_SOURCE, for asprintf
     // asprintf returns -1 on error, we check for that
     if (asprintf(&status, OUTFORMAT,
-                 (nowPlaying ? nowPlaying : ""),
+                 music_buf,
                  avgs[0], avgs[1], avgs[2],
                  batt_buf,
                  temperature_buf,
@@ -375,6 +375,5 @@ char * buildStatus(char * net_buf) {
     success = pthread_mutex_unlock(&net_buf_mutex);
     assert(success == 0);
 
-    free(nowPlaying); // If ptr is NULL, no operation is performed.
     return status;
 }
