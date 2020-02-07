@@ -10,9 +10,7 @@
 static pthread_mutex_t mpd_conn_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void handle_mpd_error(struct mpd_connection *c) {
-    assert(mpd_connection_get_error(c) != MPD_ERROR_SUCCESS);
     fprintf(stderr, "mpd: %s\n", mpd_connection_get_error_message(c));
-    mpd_connection_free(c);
 }
 
 struct mpd_connection * establish_mpd_conn(void) {
@@ -23,6 +21,7 @@ struct mpd_connection * establish_mpd_conn(void) {
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "mpd_idler: ");
         handle_mpd_error(conn);
+        mpd_connection_free(conn);
         success = pthread_mutex_unlock(&mpd_conn_mutex);
         assert (success == 0);
         sleep(15);
@@ -43,6 +42,7 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 1\n");
         handle_mpd_error(conn);
+        mpd_connection_free(conn);
         buffer[0] = '\0';
         return;
     }
@@ -53,6 +53,7 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
         fprintf(stderr, "handling error 2\n");
         mpd_status_free(status);
         handle_mpd_error(conn);
+        mpd_connection_free(conn);
         buffer[0] = '\0';
         return;
     }
@@ -110,6 +111,7 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
             !mpd_response_finish(conn)) {
         fprintf(stderr, "handling error 5\n");
         handle_mpd_error(conn);
+        mpd_connection_free(conn);
         return;
     }
 
