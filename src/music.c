@@ -19,7 +19,7 @@ struct mpd_connection * establish_mpd_conn(void) {
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
 
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
-        fprintf(stderr, "mpd_idler: ");
+        fprintf(stderr, "unable to establish mpd connection? ");
         handle_mpd_error(conn);
         mpd_connection_free(conn);
         success = pthread_mutex_unlock(&mpd_conn_mutex);
