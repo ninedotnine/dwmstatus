@@ -51,8 +51,8 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 2\n");
-        handle_mpd_error(conn);
         mpd_status_free(status);
+        handle_mpd_error(conn);
         buffer[0] = '\0';
         return;
     }
@@ -60,12 +60,13 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
     struct mpd_song *song = mpd_run_current_song(conn);
 
     if (song == NULL || mpd_status_get_state(status) != MPD_STATE_PLAY) {
-        buffer[0] = '\0';
+        // no song is playing.
         if (song != NULL) {
             mpd_song_free(song);
         }
         mpd_status_free(status);
         mpd_connection_free(conn);
+        buffer[0] = '\0';
         return;
     }
 
@@ -89,12 +90,12 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
     int length;
     if (title == NULL) {
         length = snprintf(buffer, MPD_STR_LEN, "%u/%u: %s%s %s♫%s ", pos,
-                           leng, COLO_BLUE, artist, COLO_MAGENTA, COLO_RESET);
+                          leng, COLO_BLUE, artist, COLO_MAGENTA, COLO_RESET);
     } else {
         // make title blue, artist magenta
         length = snprintf(buffer, MPD_STR_LEN, "%u/%u: %s%s%s - %s%s ♫%s ",
-                           pos, leng, COLO_BLUE, title, COLO_RESET,
-                           COLO_MAGENTA, artist, COLO_RESET);
+                          pos, leng, COLO_BLUE, title, COLO_RESET,
+                          COLO_MAGENTA, artist, COLO_RESET);
     }
     if (length < -1) {
         fprintf(stderr, "error, snprintf should not return %d\n", length);
