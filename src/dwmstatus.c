@@ -112,8 +112,13 @@ static void get_batt(char buffer[static BATT_STR_LEN]) {
         }
 
         char status[16] = {0};
-        fgets(status, 15, fd);
+        char * success = fgets(status, 15, fd);
         fclose(fd);
+        if (success == NULL) {
+            fprintf(stderr, "error reading BATT_STATUS: %s\n", BATT_STATUS);
+            snprintf(buffer, BATT_STR_LEN, "%s%d%%?%s", COLO_RED, capacity, COLO_RESET);
+            return;
+        }
 
         chargin = (0 != strncmp(status, "Discharging", 11));
         if (! chargin && capacity <= WARN_LOW_BATT) {
