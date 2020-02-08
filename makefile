@@ -5,9 +5,10 @@ CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion -Wcast-
 FILES = src/dwmstatus.c src/music.c src/net.c
 OUT_EXE = bin/dwmstatus
 LIBS = -lpthread -lmpdclient -lX11
-DEBUGFLAGS = -fsanitize=thread
-# DEBUGFLAGS = -fsanitize=thread -fsanitize=undefined
-# DEBUGFLAGS = -fsanitize=address -fsanitize=undefined
+DEBUGFLAGS = -D _FORTIFY_SOURCE
+# DEBUGFLAGS = -fsanitize=thread
+# DEBUGFLAGS = -fsanitize=undefined
+# DEBUGFLAGS = -fsanitize=address
 
 build:
 	mkdir -p bin
