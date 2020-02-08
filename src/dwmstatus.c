@@ -34,7 +34,7 @@ static void handle_signal(__attribute__((unused)) int sig) {
     // do nothing...
 }
 
-void * mpd_idler(void * arg) {
+static void * mpd_idler(void * arg) {
     char * net_buf = arg;
     int success = pthread_detach(pthread_self());
     assert (success == 0);
@@ -51,7 +51,7 @@ void * mpd_idler(void * arg) {
     }
 }
 
-void get_time(char buffer[static TIME_STR_LEN]) {
+static void get_time(char buffer[static TIME_STR_LEN]) {
     time_t cur_time = time(NULL);
     struct tm *cur_tm = localtime(&cur_time);
 
@@ -67,7 +67,7 @@ void get_time(char buffer[static TIME_STR_LEN]) {
     }
 }
 
-int read_int_from_file(const char * const filename) {
+static int read_int_from_file(const char * const filename) {
     // this function parses an int from filename
     FILE *fd = fopen(filename, "r");
     int result;
@@ -82,7 +82,7 @@ int read_int_from_file(const char * const filename) {
     return result;
 }
 
-void get_temperature(char buffer[static TEMPERATURE_STR_LEN]) {
+static void get_temperature(char buffer[static TEMPERATURE_STR_LEN]) {
     double temper = read_int_from_file(TEMPERATURE) / 1000.0;
     char * colo;
     if (temper > 85) {
@@ -98,7 +98,7 @@ void get_temperature(char buffer[static TEMPERATURE_STR_LEN]) {
                                           colo,    temper,    COLO_RESET);
 }
 
-void get_batt(char buffer[static BATT_STR_LEN]) {
+static void get_batt(char buffer[static BATT_STR_LEN]) {
     bool chargin = false;
     int capacity = read_int_from_file(BATT_CAPACITY);
     if (capacity < 95) {
@@ -145,7 +145,7 @@ void get_batt(char buffer[static BATT_STR_LEN]) {
     snprintf(buffer, BATT_STR_LEN, "%s%i%%%s", colo, capacity, COLO_RESET);
 }
 
-void get_avgs(double avgs[static 3]) {
+static void get_avgs(double avgs[static 3]) {
     // is this dumb?
     // you could just read from /proc/loadavg instead...
     // i dunno, the system call is probably just as good...
@@ -162,7 +162,7 @@ void get_avgs(double avgs[static 3]) {
     }
 }
 
-void usage(FILE * stream, int exit_code) {
+static void usage(FILE * stream, int exit_code) {
     // prints what's up to stream, then quits with status exit_code
     fprintf(stream, "usage: %s [args]\n", program_name);
     fputs(" -h --help         display this message\n", stream);
@@ -321,7 +321,7 @@ int main(int argc, char * argv[]) {
     }
 }
 
-void set_status_to(const char * string) {
+static void set_status_to(const char * string) {
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
     assert (dpy != NULL);
@@ -332,7 +332,7 @@ void set_status_to(const char * string) {
 }
 
 
-void setStatus(char * net_buf) {
+static void setStatus(char * net_buf) {
     char status_buf[EVERYTHING_STR_LEN];
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
@@ -344,7 +344,7 @@ void setStatus(char * net_buf) {
     assert (success == 0);
 }
 
-void build_status(const char * const net_str, char * everything_buf) {
+static void build_status(const char * const net_str, char * everything_buf) {
     double avgs[3];
     char batt_buf[BATT_STR_LEN];
     char temperature_buf[TEMPERATURE_STR_LEN];
