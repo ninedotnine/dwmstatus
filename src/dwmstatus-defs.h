@@ -14,8 +14,10 @@
 #define TEMPERATURE_STR_LEN 16
 // maximum length of the mpd string
 #define MPD_STR_LEN 128
+// maximum length of the output string
+#define EVERYTHING_STR_LEN 256
 // the format for everything
-#define OUTFORMAT "%s[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
+#define EVERYTHING_STR_FMT "%s[%.2f %.2f %.2f] [%s] [%s] [%s] %s"
 // level to warn on low battery
 #define WARN_LOW_BATT 9
 // what the battery warning says

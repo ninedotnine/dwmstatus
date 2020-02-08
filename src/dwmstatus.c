@@ -309,14 +309,14 @@ int main(int argc, char * argv[]) {
             sleep(SLEEP_INTERVAL);
         }
     } else {
-        char * status = buildStatus(net_buf);
+        char status_buf[EVERYTHING_STR_LEN];
+        buildStatus(net_buf, status_buf);
         if (update_mode) {
-            set_status_to(status);
+            set_status_to(status_buf);
         }
         if (report_mode) {
-            puts(status);
+            puts(status_buf);
         }
-        free(status);
         return 0;
     }
 }
@@ -333,20 +333,18 @@ void set_status_to(const char * string) {
 
 
 void setStatus(char * net_buf) {
+    char status_buf[EVERYTHING_STR_LEN];
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
-    char * status = buildStatus(net_buf);
+    buildStatus(net_buf, status_buf);
     assert (dpy != NULL);
-    XStoreName(dpy, DefaultRootWindow(dpy), status);
+    XStoreName(dpy, DefaultRootWindow(dpy), status_buf);
     XSync(dpy, False);
-    free(status);
     success = pthread_mutex_unlock(&x11_mutex);
     assert (success == 0);
 }
 
-char * buildStatus(char * net_buf) {
-    // you need to call free() after calling this function!
-    char * status;
+void buildStatus(const char * const net_str, char * everything_buf) {
     double avgs[3];
     char batt_buf[BATT_STR_LEN];
     char temperature_buf[TEMPERATURE_STR_LEN];
@@ -361,19 +359,17 @@ char * buildStatus(char * net_buf) {
 
     int success = pthread_mutex_lock(&net_buf_mutex);
     assert(success == 0);
-    // thank you, _GNU_SOURCE, for asprintf
-    // asprintf returns -1 on error, we check for that
-    if (asprintf(&status, OUTFORMAT,
-                 music_buf,
-                 avgs[0], avgs[1], avgs[2],
-                 batt_buf,
-                 temperature_buf,
-                 net_buf, time_buf) == -1) {
-        fputs("error, unable to malloc() in asprintf()", stderr);
-        exit(EXIT_FAILURE);
+    int len = snprintf(everything_buf, EVERYTHING_STR_LEN, EVERYTHING_STR_FMT,
+                       music_buf,
+                       avgs[0], avgs[1], avgs[2],
+                       batt_buf,
+                       temperature_buf,
+                       net_str, time_buf);
+    if (len < 1) {
+        fputs("error, snprintf len < 1", stderr);
+    } else if (len >= EVERYTHING_STR_LEN) {
+        fprintf(stderr, "warning, snprintf output truncated, wanted %d\n", len);
     }
     success = pthread_mutex_unlock(&net_buf_mutex);
     assert(success == 0);
-
-    return status;
 }
