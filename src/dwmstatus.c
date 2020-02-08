@@ -78,8 +78,11 @@ static int read_int_from_file(const char * const filename) {
         fprintf(stderr, "error opening %s at %s\n", filename, time_buf);
         return -1;
     }
-    fscanf(fd, "%d", &result);
+    int length = fscanf(fd, "%d", &result);
     fclose(fd);
+    if (length < 1) {
+        fprintf(stderr, "trouble reading int from %s\n", filename);
+    }
     return result;
 }
 
