@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 pthread_mutex_t net_buf_mutex = PTHREAD_MUTEX_INITIALIZER;
-// char net_buf[MAX_NET_MSG_LEN];
 
 // this function locks the net_buf_mutex before writing to net_buf
 static void write_to_net_buf(char * net_buf, const char * msg) {
