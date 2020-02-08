@@ -331,17 +331,10 @@ static void set_status_to(const char * string) {
     assert (success == 0);
 }
 
-
 static void setStatus(char * net_buf) {
     char status_buf[EVERYTHING_STR_LEN];
     build_status(net_buf, status_buf);
-    int success = pthread_mutex_lock(&x11_mutex);
-    assert (success == 0);
-    assert (dpy != NULL);
-    XStoreName(dpy, DefaultRootWindow(dpy), status_buf);
-    XSync(dpy, False);
-    success = pthread_mutex_unlock(&x11_mutex);
-    assert (success == 0);
+    set_status_to(status_buf);
 }
 
 static void build_status(const char * const net_str, char * everything_buf) {
