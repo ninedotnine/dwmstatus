@@ -47,7 +47,7 @@ static void * mpd_idler(void * arg) {
             mpd_connection_free(conn);
             conn = establish_mpd_conn();
         }
-        setStatus(net_buf);
+        set_status(net_buf);
     }
 }
 
@@ -305,7 +305,7 @@ int main(int argc, char * argv[]) {
         assert (success == 0);
 
         while (true) {
-            setStatus(net_buf);
+            set_status(net_buf);
             sleep(SLEEP_INTERVAL);
         }
     } else {
@@ -321,7 +321,7 @@ int main(int argc, char * argv[]) {
     }
 }
 
-static void set_status_to(const char * string) {
+static void set_status_to(const char * const string) {
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
     assert (dpy != NULL);
@@ -331,9 +331,9 @@ static void set_status_to(const char * string) {
     assert (success == 0);
 }
 
-static void setStatus(char * net_buf) {
+static void set_status(const char * const net_str) {
     char status_buf[EVERYTHING_STR_LEN];
-    build_status(net_buf, status_buf);
+    build_status(net_str, status_buf);
     set_status_to(status_buf);
 }
 
