@@ -360,11 +360,8 @@ void buildStatus(const char * const net_str, char * everything_buf) {
     int success = pthread_mutex_lock(&net_buf_mutex);
     assert(success == 0);
     int len = snprintf(everything_buf, EVERYTHING_STR_LEN, EVERYTHING_STR_FMT,
-                       music_buf,
-                       avgs[0], avgs[1], avgs[2],
-                       batt_buf,
-                       temperature_buf,
-                       net_str, time_buf);
+                       music_buf, avgs[0], avgs[1], avgs[2], batt_buf,
+                       temperature_buf, net_str, time_buf);
     if (len < 1) {
         fputs("error, snprintf len < 1", stderr);
     } else if (len >= EVERYTHING_STR_LEN) {
