@@ -310,7 +310,7 @@ int main(int argc, char * argv[]) {
         }
     } else {
         char status_buf[EVERYTHING_STR_LEN];
-        buildStatus(net_buf, status_buf);
+        build_status(net_buf, status_buf);
         if (update_mode) {
             set_status_to(status_buf);
         }
@@ -336,7 +336,7 @@ void setStatus(char * net_buf) {
     char status_buf[EVERYTHING_STR_LEN];
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
-    buildStatus(net_buf, status_buf);
+    build_status(net_buf, status_buf);
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status_buf);
     XSync(dpy, False);
@@ -344,7 +344,7 @@ void setStatus(char * net_buf) {
     assert (success == 0);
 }
 
-void buildStatus(const char * const net_str, char * everything_buf) {
+void build_status(const char * const net_str, char * everything_buf) {
     double avgs[3];
     char batt_buf[BATT_STR_LEN];
     char temperature_buf[TEMPERATURE_STR_LEN];

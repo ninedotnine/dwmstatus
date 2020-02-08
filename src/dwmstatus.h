@@ -11,5 +11,5 @@ void get_avgs(double avgs[static 3]);
 void usage(FILE * stream, int exit_code);
 void setStatus(char * net_buf);
 void set_status_to(const char * string);
-void buildStatus(const char * net_str, char * buffer);
+void build_status(const char * net_str, char * buffer);
 void * mpd_idler(__attribute__((unused)) void * arg);
