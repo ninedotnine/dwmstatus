@@ -334,9 +334,9 @@ static void set_status_to(const char * string) {
 
 static void setStatus(char * net_buf) {
     char status_buf[EVERYTHING_STR_LEN];
+    build_status(net_buf, status_buf);
     int success = pthread_mutex_lock(&x11_mutex);
     assert (success == 0);
-    build_status(net_buf, status_buf);
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), status_buf);
     XSync(dpy, False);
