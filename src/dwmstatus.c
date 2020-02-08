@@ -106,7 +106,7 @@ static void get_batt(char buffer[static BATT_STR_LEN]) {
         FILE *fd;
         fd = fopen(BATT_STATUS, "r");
         if (fd == NULL) {
-            fputs("Error opening BATT_STATUS.\n", stderr);
+            fprintf(stderr, "Error opening BATT_STATUS. %s\n", BATT_STATUS);
             snprintf(buffer, BATT_STR_LEN, "%s?%d%%%s", COLO_RED, capacity, COLO_RESET);
             return;
         }
