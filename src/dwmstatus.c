@@ -11,6 +11,7 @@
 #include "dwmstatus.h"
 #include "dwmstatus-defs.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -275,10 +276,15 @@ int main(int argc, char * argv[]) {
     if (daemon_mode) {
         if (! run_in_foreground) {
             if (be_quiet) {
-                daemon(0, 0);
+                success = daemon(0, 0);
             } else {
-                daemon(0, 1);
+                success = daemon(0, 1);
             }
+            if (success != 0) {
+                fprintf(stderr, "failure to daemonize, %s\n", strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+            assert (success == 0);
         }
     }
 
