@@ -37,7 +37,7 @@ struct mpd_connection * establish_mpd_conn(void) {
 }
 
 void get_now_playing(char buffer[MPD_STR_LEN]) {
-    struct mpd_connection *conn = establish_mpd_conn();
+    struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
 
     if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "handling error 1\n");
