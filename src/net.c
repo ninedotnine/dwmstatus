@@ -16,11 +16,11 @@ static void write_to_net_buf(char * net_buf, const char * msg) {
     int success = pthread_mutex_lock(&net_buf_mutex);
     assert(success == 0);
 
-    success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s", msg);
+    int length = snprintf(net_buf, MAX_NET_MSG_LEN, "%s", msg);
 
-    if (success > MAX_NET_MSG_LEN) {
+    if (length > MAX_NET_MSG_LEN) {
         fputs("net output truncated\n", stderr);
-    } else if (success < 1) {
+    } else if (length < 1) {
         fputs("error, problem with snprintf\n", stderr);
         exit(14);
     }
@@ -56,8 +56,8 @@ void update_net_buffer(char * net_buf) {
 
 void * network_updater(void * buffer) {
     char * net_buf = buffer;
-    int success = pthread_detach(pthread_self());
-    assert (success == 0);
+    int detach_ret = pthread_detach(pthread_self());
+    assert (detach_ret == 0);
     while (true) {
         update_net_buffer(net_buf);
         sleep(SLEEP_INTERVAL);

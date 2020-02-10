@@ -37,8 +37,8 @@ static void handle_signal(__attribute__((unused)) int sig) {
 
 static void * mpd_idler(void * arg) {
     char * net_buf = arg;
-    int success = pthread_detach(pthread_self());
-    assert (success == 0);
+    int detach_ret = pthread_detach(pthread_self());
+    assert (detach_ret == 0);
 
     struct mpd_connection * conn = establish_mpd_conn();
     while (true) {
@@ -115,9 +115,9 @@ static void get_batt(char buffer[static BATT_STR_LEN]) {
         }
 
         char status[16] = {0};
-        char * success = fgets(status, 15, fd);
+        char * fgets_ret = fgets(status, 15, fd);
         fclose(fd);
-        if (success == NULL) {
+        if (fgets_ret == NULL) {
             fprintf(stderr, "error reading BATT_STATUS: %s\n", BATT_STATUS);
             snprintf(buffer, BATT_STR_LEN, "%s%d%%?%s", COLO_RED, capacity, COLO_RESET);
             return;
@@ -265,10 +265,10 @@ int main(int argc, char * argv[]) {
     // the buffer will be later populated by the network_worker,
     // unless noNetwork is true.
     char net_buf[MAX_NET_MSG_LEN];
-    int success = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
-    if (success > MAX_NET_MSG_LEN) {
+    int length = snprintf(net_buf, MAX_NET_MSG_LEN, "%s?%s", COLO_DEEPGREEN, COLO_RESET);
+    if (length > MAX_NET_MSG_LEN) {
         fputs("the net buffer is too small.\n", stderr);
-    } else if (success < 1) {
+    } else if (length < 1) {
         fputs("error, problem with snprintf\n", stderr);
         exit(16);
     }
@@ -283,16 +283,17 @@ int main(int argc, char * argv[]) {
 
     if (daemon_mode) {
         if (! run_in_foreground) {
+            int daemon_ret;
             if (be_quiet) {
-                success = daemon(0, 0);
+                daemon_ret = daemon(0, 0);
             } else {
-                success = daemon(0, 1);
+                daemon_ret = daemon(0, 1);
             }
-            if (success != 0) {
+            if (daemon_ret != 0) {
                 fprintf(stderr, "failure to daemonize, %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
             }
-            assert (success == 0);
+            assert (daemon_ret == 0);
         }
     }
 
@@ -315,8 +316,8 @@ int main(int argc, char * argv[]) {
         sigemptyset(&sa.sa_mask);
         sa.sa_handler = handle_signal;
         sa.sa_flags = SA_RESTART;
-        success = sigaction(SIGUSR1, &sa, NULL);
-        assert (success == 0);
+        int sigaction_ret = sigaction(SIGUSR1, &sa, NULL);
+        assert (sigaction_ret == 0);
 
         while (true) {
             set_status(net_buf);
