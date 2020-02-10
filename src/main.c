@@ -1,7 +1,7 @@
 #include "music.h"
 #include "net.h"
 #include "utils.h"
-#include "dwmstatus-defs.h"
+#include "config.h"
 
 #include <errno.h>
 #include <stdio.h>

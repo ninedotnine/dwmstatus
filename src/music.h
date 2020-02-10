@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dwmstatus-defs.h"
+#include "config.h"
 
 #include <mpd/client.h>
 

@@ -2,7 +2,7 @@
 
 #include "music.h"
 #include "net.h"
-#include "dwmstatus-defs.h"
+#include "config.h"
 
 #include <assert.h>
 #include <stdio.h>

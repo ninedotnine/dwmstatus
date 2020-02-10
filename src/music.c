@@ -1,6 +1,6 @@
 #include "music.h"
 #include "utils.h"
-#include "dwmstatus-defs.h"
+#include "config.h"
 
 #include <assert.h>
 #include <pthread.h>
