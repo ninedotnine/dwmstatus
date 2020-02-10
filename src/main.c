@@ -7,15 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
 #include <locale.h>
 #include <string.h>
 #include <assert.h>
-#include <X11/Xlib.h>
-#include <mpd/client.h>
 #include <getopt.h>
 #include <signal.h>
-#include <stdbool.h>
 #include <pthread.h>
 
 static const char * program_name;

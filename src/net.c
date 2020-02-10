@@ -1,3 +1,4 @@
+#include "config.h"
 #include "net.h"
 
 #include <assert.h>

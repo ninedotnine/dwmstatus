@@ -2,7 +2,6 @@
 
 #include "config.h"
 
-#include <stdbool.h>
 #include <pthread.h>
 
 extern pthread_mutex_t net_buf_mutex;

@@ -1,6 +1,6 @@
+#include "config.h"
 #include "music.h"
 #include "utils.h"
-#include "config.h"
 
 #include <assert.h>
 #include <pthread.h>
