@@ -1,4 +1,5 @@
 #include "music.h"
+#include "utils.h"
 #include "dwmstatus-defs.h"
 
 #include <assert.h>
@@ -116,4 +117,21 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
     }
 
     mpd_connection_free(conn);
+}
+
+void * mpd_idler(void * arg) {
+    char * net_buf = arg;
+    int detach_ret = pthread_detach(pthread_self());
+    assert (detach_ret == 0);
+
+    struct mpd_connection * conn = establish_mpd_conn();
+    while (true) {
+        enum mpd_idle event = mpd_run_idle(conn);
+        if (event == 0) {
+            fputs("error, mpd_run_idle broke. was mpd killed? ", stderr);
+            mpd_connection_free(conn);
+            conn = establish_mpd_conn();
+        }
+        set_status(net_buf);
+    }
 }
