@@ -13,8 +13,8 @@ pthread_mutex_t net_buf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // this function locks the net_buf_mutex before writing to net_buf
 static void write_to_net_buf(char * net_buf, const char * msg) {
-    int success = pthread_mutex_lock(&net_buf_mutex);
-    assert(success == 0);
+    int lock_ret = pthread_mutex_lock(&net_buf_mutex);
+    assert(lock_ret == 0);
 
     int length = snprintf(net_buf, MAX_NET_MSG_LEN, "%s", msg);
 
@@ -25,8 +25,8 @@ static void write_to_net_buf(char * net_buf, const char * msg) {
         exit(14);
     }
 
-    success = pthread_mutex_unlock(&net_buf_mutex);
-    assert(success == 0);
+    lock_ret = pthread_mutex_unlock(&net_buf_mutex);
+    assert(lock_ret == 0);
 }
 
 void update_net_buffer(char * net_buf) {

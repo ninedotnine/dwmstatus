@@ -14,24 +14,24 @@ static void handle_mpd_error(struct mpd_connection *c) {
 }
 
 struct mpd_connection * establish_mpd_conn(void) {
-    int success = pthread_mutex_lock(&mpd_conn_mutex);
-    assert (success == 0);
+    int lock_ret = pthread_mutex_lock(&mpd_conn_mutex);
+    assert (lock_ret == 0);
     struct mpd_connection *conn = mpd_connection_new(NULL, 0, 0);
 
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "unable to establish mpd connection? ");
         handle_mpd_error(conn);
         mpd_connection_free(conn);
-        success = pthread_mutex_unlock(&mpd_conn_mutex);
-        assert (success == 0);
+        lock_ret = pthread_mutex_unlock(&mpd_conn_mutex);
+        assert (lock_ret == 0);
         sleep(15);
-        success = pthread_mutex_lock(&mpd_conn_mutex);
-        assert (success == 0);
+        lock_ret = pthread_mutex_lock(&mpd_conn_mutex);
+        assert (lock_ret == 0);
         conn = mpd_connection_new(NULL, 0, 10000);
     }
 
-    success = pthread_mutex_unlock(&mpd_conn_mutex);
-    assert (success == 0);
+    lock_ret = pthread_mutex_unlock(&mpd_conn_mutex);
+    assert (lock_ret == 0);
 
     return conn;
 }

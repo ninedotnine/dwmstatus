@@ -337,13 +337,13 @@ int main(int argc, char * argv[]) {
 }
 
 static void set_status_to(const char * const string) {
-    int success = pthread_mutex_lock(&x11_mutex);
-    assert (success == 0);
+    int lock_ret = pthread_mutex_lock(&x11_mutex);
+    assert (lock_ret == 0);
     assert (dpy != NULL);
     XStoreName(dpy, DefaultRootWindow(dpy), string);
     XSync(dpy, False);
-    success = pthread_mutex_unlock(&x11_mutex);
-    assert (success == 0);
+    lock_ret = pthread_mutex_unlock(&x11_mutex);
+    assert (lock_ret == 0);
 }
 
 static void set_status(const char * const net_str) {
@@ -365,8 +365,8 @@ static void build_status(const char * const net_str, char * everything_buf) {
     get_time(time_buf);
     get_now_playing(music_buf); // this might set nowPlaying to NULL
 
-    int success = pthread_mutex_lock(&net_buf_mutex);
-    assert(success == 0);
+    int lock_ret = pthread_mutex_lock(&net_buf_mutex);
+    assert(lock_ret == 0);
     int len = snprintf(everything_buf, EVERYTHING_STR_LEN, EVERYTHING_STR_FMT,
                        music_buf, avgs[0], avgs[1], avgs[2], batt_buf,
                        temperature_buf, net_str, time_buf);
@@ -375,6 +375,6 @@ static void build_status(const char * const net_str, char * everything_buf) {
     } else if (len >= EVERYTHING_STR_LEN) {
         fprintf(stderr, "warning, snprintf output truncated, wanted %d\n", len);
     }
-    success = pthread_mutex_unlock(&net_buf_mutex);
-    assert(success == 0);
+    lock_ret = pthread_mutex_unlock(&net_buf_mutex);
+    assert(lock_ret == 0);
 }
