@@ -1,18 +1,18 @@
+#include "config.h"
 #include "music.h"
 #include "net.h"
 #include "utils.h"
-#include "config.h"
 
+#include <assert.h>
 #include <errno.h>
+#include <getopt.h>
+#include <locale.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <locale.h>
 #include <string.h>
-#include <assert.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <signal.h>
-#include <pthread.h>
 
 static const char * program_name;
 

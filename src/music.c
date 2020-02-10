@@ -1,5 +1,6 @@
-#include "config.h"
 #include "music.h"
+
+#include "config.h"
 #include "utils.h"
 
 #include <assert.h>

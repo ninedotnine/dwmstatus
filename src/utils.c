@@ -1,8 +1,8 @@
 #include "utils.h"
 
+#include "config.h"
 #include "music.h"
 #include "net.h"
-#include "config.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <X11/Xlib.h>
 
 static Display *dpy = NULL;
 static pthread_mutex_t x11_mutex = PTHREAD_MUTEX_INITIALIZER;

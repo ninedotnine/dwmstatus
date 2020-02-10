@@ -2,8 +2,6 @@
 
 #include "config.h"
 
-#include <X11/Xlib.h>
-
 void open_x11(void);
 void set_status(const char * net_buf);
 void set_status_to(const char * string);

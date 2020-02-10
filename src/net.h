@@ -1,7 +1,5 @@
 #pragma once
 
-#include "config.h"
-
 #include <pthread.h>
 
 extern pthread_mutex_t net_buf_mutex;
