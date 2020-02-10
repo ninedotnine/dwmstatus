@@ -1,11 +1,3 @@
-/*
- * 9.9
- * colours!!!
- */
-
-// NDEBUG turns off all assert() calls
-// #define NDEBUG
-
 #include "music.h"
 #include "net.h"
 #include "utils.h"

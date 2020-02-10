@@ -2,6 +2,9 @@
 
 /* SETTINGS */
 
+// NDEBUG turns off all assert() calls
+// #define NDEBUG
+
 // the format for the date/time
 #define TIME_STR_FMT "%a %d %b  %H:%M"
 // how many chars to allocate for the date/time
