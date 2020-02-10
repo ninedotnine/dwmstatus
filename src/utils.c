@@ -12,8 +12,16 @@
 #include <time.h>
 #include <unistd.h>
 
-Display *dpy = NULL;
+static Display *dpy = NULL;
 static pthread_mutex_t x11_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void open_x11(void) {
+    dpy = XOpenDisplay(NULL);
+    if (dpy == NULL) {
+        fputs("Cannot open display. are you _sure_ X11 is running?\n", stderr);
+        exit(EXIT_FAILURE);
+    }
+}
 
 static void get_time(char buffer[static TIME_STR_LEN]) {
     time_t cur_time = time(NULL);

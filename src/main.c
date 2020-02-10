@@ -127,11 +127,7 @@ int main(int argc, char * argv[]) {
     }
 
     if (daemon_mode || update_mode) {
-        if (!(dpy = XOpenDisplay(NULL))) {
-            fputs("Cannot open display. are you _sure_ X11 is running?\n",
-                    stderr);
-            return EXIT_FAILURE;
-        }
+        open_x11();
     }
 
     if (daemon_mode) {
