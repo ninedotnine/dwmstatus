@@ -1,4 +1,4 @@
-VERSION = $(shell git describe)
+VERSION = $(shell git describe --always --dirty --tags)
 CC ?= gcc
 DEFS = -D _GNU_SOURCE -D VERSION=\"$(VERSION)\" -D ZENITY
 CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion -Wcast-align=strict
