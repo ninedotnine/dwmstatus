@@ -1,11 +1,14 @@
-VERSION = $(shell git describe --always --dirty --tags)
-CC ?= gcc
-DEFS = -D _GNU_SOURCE -D VERSION=\"$(VERSION)\" -D ZENITY
-CFLAGS = -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion -Wcast-align=strict
-FILES = src/main.c src/music.c src/net.c src/utils.c
-OUT_EXE = bin/dwmstatus
-LIBS = -lpthread -lmpdclient -lX11
-DEBUGFLAGS = -D _FORTIFY_SOURCE
+ifeq ($(origin CC),default)
+	CC := gcc
+	CFLAGS += -Wcast-align=strict
+endif
+VERSION := $(shell git describe --always --dirty --tags)
+DEFS := -D _GNU_SOURCE -D VERSION=\"$(VERSION)\" -D ZENITY
+CFLAGS += -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion
+FILES := src/main.c src/music.c src/net.c src/utils.c
+OUT_EXE := bin/dwmstatus
+LIBS := -lpthread -lmpdclient -lX11
+DEBUGFLAGS := -D _FORTIFY_SOURCE
 # DEBUGFLAGS = -fsanitize=thread
 # DEBUGFLAGS = -fsanitize=undefined
 # DEBUGFLAGS = -fsanitize=address
