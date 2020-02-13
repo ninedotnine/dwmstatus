@@ -1,6 +1,7 @@
 #include "net.h"
 
 #include "config.h"
+#include "utils.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -69,6 +70,7 @@ void * network_updater(void * buffer) {
     assert (detach_ret == 0);
     while (true) {
         update_net_buffer(net_buf);
+        set_status(net_buf);
         sleep(SLEEP_INTERVAL);
     }
 }
