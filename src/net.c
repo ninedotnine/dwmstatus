@@ -44,10 +44,12 @@ void update_net_buffer(char * net_buf) {
         int sockfd = socket(info->ai_family,
                             info->ai_socktype,
                             info->ai_protocol);
-        if (connect(sockfd, info->ai_addr, info->ai_addrlen) == -1) {
+        error = connect(sockfd, info->ai_addr, info->ai_addrlen);
+        if (error == -1) {
             fprintf(stderr, "errno is: %i\n", errno);
             write_to_net_buf(net_buf, COLO_YELLOW "NET" COLO_RESET);
         } else {
+            assert (error == 0);
             write_to_net_buf(net_buf, COLO_DEEPGREEN "5x5" COLO_RESET);
         }
         close(sockfd);
