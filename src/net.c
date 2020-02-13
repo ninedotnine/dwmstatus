@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 pthread_mutex_t net_buf_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -44,13 +45,18 @@ void update_net_buffer(char * net_buf) {
         int sockfd = socket(info->ai_family,
                             info->ai_socktype,
                             info->ai_protocol);
-        error = connect(sockfd, info->ai_addr, info->ai_addrlen);
-        if (error == -1) {
-            fprintf(stderr, "errno is: %i\n", errno);
-            write_to_net_buf(net_buf, COLO_YELLOW "NET" COLO_RESET);
+        if (sockfd < 0) {
+            fprintf(stderr, "net error: sockfd < 0; %s\n", strerror(errno));
+            write_to_net_buf(net_buf, COLO_RED "NET?" COLO_RESET);
         } else {
-            assert (error == 0);
-            write_to_net_buf(net_buf, COLO_DEEPGREEN "5x5" COLO_RESET);
+            error = connect(sockfd, info->ai_addr, info->ai_addrlen);
+            if (error == -1) {
+                fprintf(stderr, "errno is: %i\n", errno);
+                write_to_net_buf(net_buf, COLO_YELLOW "NET" COLO_RESET);
+            } else {
+                assert (error == 0);
+                write_to_net_buf(net_buf, COLO_DEEPGREEN "5x5" COLO_RESET);
+            }
         }
         close(sockfd);
     }
