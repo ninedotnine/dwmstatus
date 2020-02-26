@@ -4,7 +4,7 @@ ifeq ($(origin CC),default)
 endif
 VERSION := $(shell git describe --always --dirty --tags)
 DEFS := -D _GNU_SOURCE -D VERSION=\"$(VERSION)\" -D ZENITY
-CFLAGS += -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion
+CFLAGS := -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion $(CFLAGS)
 FILES := src/main.c src/music.c src/net.c src/utils.c
 HEADERS := src/*.h
 OUT_EXE := bin/dwmstatus
