@@ -5,6 +5,7 @@
 #include "net.h"
 
 #include <assert.h>
+#include <iso646.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -96,11 +97,11 @@ static void get_batt(char buffer[static BATT_STR_LEN]) {
         }
 
         chargin = (0 != strncmp(status, "Discharging", 11));
-        if (! chargin && capacity <= WARN_LOW_BATT) {
+        if (not chargin and capacity <= WARN_LOW_BATT) {
             fputs("low battery warning\n", stderr);
 #ifdef ZENITY
             // display a warning on low battery and not plugged in.
-            if (! fork()) {
+            if (not fork()) {
                 char * const args[] = {"env", "zenity", "--warning",
                             "--width=600", "--text=" WARN_LOW_BATT_TEXT, NULL};
                 execv("/usr/bin/env", args);

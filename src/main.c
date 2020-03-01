@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
+#include <iso646.h>
 #include <locale.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -106,7 +107,7 @@ int main(int argc, char * argv[]) {
         }
     } while (nextOption != -1);
 
-    if (! (update_mode || daemon_mode || report_mode)) {
+    if (not (update_mode or daemon_mode or report_mode)) {
         report_mode = true; // a sensible default
     }
 
@@ -122,12 +123,12 @@ int main(int argc, char * argv[]) {
         exit(16);
     }
 
-    if (daemon_mode || update_mode) {
+    if (daemon_mode or update_mode) {
         open_x11();
     }
 
     if (daemon_mode) {
-        if (! run_in_foreground) {
+        if (not run_in_foreground) {
             int daemon_ret;
             if (be_quiet) {
                 daemon_ret = daemon(0, 0);
@@ -142,8 +143,8 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (! noNetwork) {
-        if (update_mode || report_mode) {
+    if (not noNetwork) {
+        if (update_mode or report_mode) {
             update_net_buffer(net_buf);
         }
         if (daemon_mode) {

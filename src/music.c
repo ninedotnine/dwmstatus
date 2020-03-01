@@ -4,6 +4,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <iso646.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +63,7 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
 
     struct mpd_song *song = mpd_run_current_song(conn);
 
-    if (song == NULL || mpd_status_get_state(status) != MPD_STATE_PLAY) {
+    if (song == NULL or mpd_status_get_state(status) != MPD_STATE_PLAY) {
         // no song is playing.
         if (song != NULL) {
             mpd_song_free(song);
@@ -109,8 +110,8 @@ void get_now_playing(char buffer[MPD_STR_LEN]) {
     mpd_song_free(song);
     mpd_status_free(status);
 
-    if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS ||
-            !mpd_response_finish(conn)) {
+    if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS or
+            not mpd_response_finish(conn)) {
         fprintf(stderr, "handling error 5\n");
         handle_mpd_error(conn);
         mpd_connection_free(conn);
