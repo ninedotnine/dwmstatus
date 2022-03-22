@@ -14,7 +14,6 @@ FILES := src/main.c src/music.c src/net.c src/utils.c
 HEADERS := src/*.h
 OUT_EXE := bin/danwmstatus
 LIBS := -lpthread -lmpdclient -lX11
-DEBUGFLAGS := -D _FORTIFY_SOURCE
 # DEBUGFLAGS = -fsanitize=thread
 # DEBUGFLAGS = -fsanitize=undefined
 # DEBUGFLAGS = -fsanitize=address
@@ -23,7 +22,7 @@ DEBUGFLAGS := -D _FORTIFY_SOURCE
 all: $(OUT_EXE)
 
 $(OUT_EXE): $(FILES) $(HEADERS) | bin
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(DEFS) $(INCLUDES) -o $(OUT_EXE) $(FILES) $(LIBS)
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(DEFS) -o $(OUT_EXE) $(FILES) $(LIBS)
 
 bin:
 	mkdir -p bin
