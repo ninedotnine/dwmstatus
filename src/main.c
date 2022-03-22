@@ -93,7 +93,7 @@ int main(int argc, char * argv[]) {
                 be_quiet = true;
                 break;
             case 'v':
-                printf("dan's dwmstatus version: %s\n", VERSION);
+                printf("danwmstatus %s\n", VERSION);
                 exit(EXIT_SUCCESS);
             case '?':
                 usage(stderr, 1);
