@@ -1,8 +1,13 @@
+SHELL = /bin/sh
+
 ifeq ($(origin CC),default)
 	CC := gcc
 	CFLAGS += -Wcast-align=strict
 endif
-VERSION := $(shell git describe --always --dirty --tags)
+ifeq ($(origin VERSION), undefined)
+	VERSION := $(shell git describe --always --dirty --tags)
+endif
+
 DEFS := -D _GNU_SOURCE -D VERSION=\"$(VERSION)\" -D ZENITY
 CFLAGS := -std=c11 -Wall -Wextra -O3 -g -pedantic -Wformat=2 -Wconversion $(CFLAGS)
 FILES := src/main.c src/music.c src/net.c src/utils.c
