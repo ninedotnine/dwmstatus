@@ -97,7 +97,7 @@ static void get_batt(char buffer[static BATT_STR_LEN]) {
         }
 
         chargin = (0 != strncmp(status, "Discharging", 11));
-        if (not chargin and capacity <= WARN_LOW_BATT) {
+        if (not chargin) {
             fputs("low battery warning\n", stderr);
 #ifdef ZENITY
             // display a warning on low battery and not plugged in.
